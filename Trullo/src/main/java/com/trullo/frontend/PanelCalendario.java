@@ -1,42 +1,37 @@
-package com.trullo.ui;
+package com.trullo.frontend;
 
 import javax.swing.*;
 import java.awt.*;
 
-// Panel principal del calendario
-// basicamente es un contenedor que junta el calendario mensual y el panel de recordatorios
-// es como un layout wrapper que organiza las dos partes
+// este panel es solo un wrapper que junta el calendario y los recordatorios lado a lado
+// no hace mucho mas, es para ordenar el layout nomas
 public class PanelCalendario extends JPanel {
 
-    // constructor, arma el panel con calendario a la izq y recordatorios a la der
     public PanelCalendario() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(36, 48, 36, 48));
         setBackground(ThemeManager.fondo());
 
-        // titulo de la seccion
+        // titulito arriba
         JLabel titulo = new JLabel("Calendario");
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titulo.setForeground(ThemeManager.texto());
         titulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 22, 0));
 
-        // el calendario mensual que muestra los dias
+        // los dos paneles posta
         CalendarioMensual calendario = new CalendarioMensual();
+        PanelRecordatorios panelRecordatorios = new PanelRecordatorios(calendario); // le paso el calendario para que se hablen
 
-        // el panel de recordatorios que va al lado del calendario
-        PanelRecordatorios panelRecordatorios = new PanelRecordatorios(calendario);
-
-        // fila central que tiene el calendario a la izquierda y recordatorios al centro/derecha
+        // los pongo uno al lado del otro
         JPanel filaCentral = new JPanel(new BorderLayout());
         filaCentral.setOpaque(false);
-        filaCentral.add(calendario, BorderLayout.WEST);    // calendario a la izquierda
-        filaCentral.add(panelRecordatorios, BorderLayout.CENTER); // recordatorios al centro
+        filaCentral.add(calendario, BorderLayout.WEST);
+        filaCentral.add(panelRecordatorios, BorderLayout.CENTER);
 
-        // acomodamos todo
         add(titulo, BorderLayout.NORTH);
         add(filaCentral, BorderLayout.CENTER);
 
-        // listener para cambio de tema
+        // si cambia el tema repinto
         ThemeManager.onThemeChange(() -> {
             setBackground(ThemeManager.fondo());
             titulo.setForeground(ThemeManager.texto());

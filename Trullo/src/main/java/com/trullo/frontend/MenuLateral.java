@@ -1,6 +1,6 @@
-package com.trullo.ui;
+package com.trullo.frontend;
 
-import com.trullo.util.EmojiIcon;
+import com.trullo.recursos.EmojiIcon;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,141 +8,129 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
-// Esta clase es el menu lateral de la app
-// tiene los botones de navegacion para ir a cada seccion
-// y maneja el estado de que boton esta activo
+// barra lateral izquierda con los botones para moverse entre pantallas
+// es lo primero que ves, tipo sidebar de cualquier app
 public class MenuLateral extends JPanel {
 
-    // el boton que esta seleccionado actualmente
+    // cual esta marcado ahora
     private JButton botonActivo;
 
-    // callback que se ejecuta cuando clickean una opcion del menu
-    // le pasa el nombre de la seccion al listener principal
+    // funcion que llama cuando tocan un boton, se la paso desde TrulloApp
     private final Consumer<String> onNavigate;
 
-    // constructor, recibe la funcion que se ejecuta al navegar
     public MenuLateral(Consumer<String> onNavigate) {
         this.onNavigate = onNavigate;
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(ConstantesUI.ANCHO_MENU, 800));
         setBackground(ThemeManager.menu());
 
-        // panel donde van todos los elementos del menu
+        // contenedor vertical con todo adentro
         JPanel contenido = new JPanel();
         contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
         contenido.setOpaque(false);
         contenido.setBorder(BorderFactory.createEmptyBorder(28, 18, 20, 18));
 
-        // el logo de la app arriba del todo
+        // logo arriba de todo
         JLabel logo = new JLabel("Trullo");
         logo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         logo.setName("logo");
 
-        // panel de navegacion donde van los botones principales
+        // donde van los 3 botones principales
         JPanel panelNavegacion = new JPanel();
         panelNavegacion.setLayout(new BoxLayout(panelNavegacion, BoxLayout.Y_AXIS));
         panelNavegacion.setOpaque(false);
 
-        // creamos los botones del menu con sus emojis
+        // creo los botones con su emoji, el unicode es medio feo pero bue
         JButton btnTasks = crearBotonMenu("\uD83D\uDCDD", "My Tasks", 14);
         JButton btnCalendario = crearBotonMenu("\uD83D\uDCC5", "Calendario", 14);
         JButton btnNotas = crearBotonMenu("\uD83D\uDCDA", "Notas", 14);
 
-        // les agregamos las acciones a cada boton
-        // cuando clickean, activan el boton y avisan a navegacion
+        // cada uno activa su boton y avisa a donde ir
         btnTasks.addActionListener(e -> { activar(btnTasks); onNavigate.accept("My Tasks"); });
         btnCalendario.addActionListener(e -> { activar(btnCalendario); onNavigate.accept("Calendario"); });
         btnNotas.addActionListener(e -> { activar(btnNotas); onNavigate.accept("Notas"); });
 
-        // agregamos los botones al panel con espaciadores entre ellos
         panelNavegacion.add(btnTasks);
         panelNavegacion.add(Box.createVerticalStrut(4));
         panelNavegacion.add(btnCalendario);
         panelNavegacion.add(Box.createVerticalStrut(4));
         panelNavegacion.add(btnNotas);
 
-        // panel inferior que tiene el separador y el boton de configuracion
+        // parte de abajo con la lineita y config
         JPanel panelInferior = new JPanel();
         panelInferior.setLayout(new BoxLayout(panelInferior, BoxLayout.Y_AXIS));
         panelInferior.setOpaque(false);
 
-        // separador visual entre las opciones principales y config
         JSeparator separador = new JSeparator();
         separador.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
         separador.setName("separador");
 
-        // boton de configuracion abajo del todo
         JButton btnConfig = crearBotonMenu("\u2699\uFE0F", "Configuración", 14);
         btnConfig.addActionListener(e -> { activar(btnConfig); onNavigate.accept("Configuración"); });
 
-        // acomodamos el panel inferior
         panelInferior.add(Box.createVerticalStrut(20));
         panelInferior.add(separador);
         panelInferior.add(Box.createVerticalStrut(12));
         panelInferior.add(btnConfig);
 
-        // agregamos todo al contenido: logo arriba, navegacion, y abajo config
+        // meto todo junto
         contenido.add(logo);
         contenido.add(panelNavegacion);
-        contenido.add(Box.createVerticalGlue()); // espacio flexible que empuja config para abajo
+        contenido.add(Box.createVerticalGlue()); // este empuja lo de abajo bien al fondo
         contenido.add(panelInferior);
 
         add(contenido, BorderLayout.CENTER);
 
-        // listener para cambiar colores cuando cambia el tema
+        // si cambia el tema actualizo colores
         ThemeManager.onThemeChange(() -> {
             setBackground(ThemeManager.menu());
             logo.setForeground(ThemeManager.texto());
             separador.setBackground(ThemeManager.borde());
-            activar(botonActivo); // reactivamos el boton actual para actualizar colores
+            activar(botonActivo); // reaplico el estilo al activo
             revalidate();
             repaint();
         });
 
-        activar(btnTasks); // activamos "My Tasks" por defecto
+        activar(btnTasks); // que arranque en tareas seleccionado
     }
 
-    // activa un boton y desactiva el anterior
-    // es como un radio button pero con botones custom
+    // marca uno como activo y desmarca el anterior
     private void activar(JButton boton) {
         if (botonActivo != null) {
-            botonActivo.setBackground(null); // le sacamos el fondo al boton que estaba activo
+            botonActivo.setBackground(null); // le saco el fondo
             botonActivo.setForeground(ThemeManager.textoSuave());
         }
         botonActivo = boton;
         if (boton != null) {
-            boton.setBackground(ThemeManager.menuActivo()); // le ponemos el fondo azul suave
-            boton.setForeground(ThemeManager.AZUL); // y el texto azul
+            boton.setBackground(ThemeManager.menuActivo()); // fondo celestito
+            boton.setForeground(ThemeManager.AZUL);
         }
     }
 
-    // crea un boton del menu con su emoji y texto
-    // recibe el emoji (como string unicode), el texto y el tamaño de la fuente
+    // fabrica de botones del menu, para no repetir codigo
     private JButton crearBotonMenu(String icono, String texto, int tamanoFont) {
         JButton boton = new JButton(texto);
-        boton.setIcon(new EmojiIcon(icono, tamanoFont + 6)); // el icono un poco mas grande que el texto
+        boton.setIcon(new EmojiIcon(icono, tamanoFont + 6)); // iconito un toque mas grande que el texto
 
-        // configuramos la alineacion del boton
         boton.setHorizontalAlignment(SwingConstants.LEFT);
-        boton.setIconTextGap(12); // espacio entre icono y texto
+        boton.setIconTextGap(12);
         boton.setHorizontalTextPosition(SwingConstants.RIGHT);
         boton.setVerticalTextPosition(SwingConstants.CENTER);
 
-        // estilos del boton
         boton.setFont(new Font("Segoe UI", Font.PLAIN, tamanoFont));
-        boton.setForeground(ThemeManager.textoSuave()); // color gris por defecto
-        boton.setBackground(null); // sin fondo por defecto
+        boton.setForeground(ThemeManager.textoSuave());
+        boton.setBackground(null);
         boton.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 10));
-        boton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44)); // alto fijo
+        boton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         boton.setPreferredSize(new Dimension(Integer.MAX_VALUE, 44));
-        boton.setFocusPainted(false); // sin borde de foco
-        boton.setOpaque(true); // para que se vea el background
+        boton.setFocusPainted(false);
+        boton.setOpaque(true);
 
-        // propiedades de FlatLaf para que sea redondeado
+        // para que quede redondeadito con flatlaf
         boton.putClientProperty("JButton.buttonType", "roundRect");
         boton.putClientProperty("JButton.arc", 12);
 
-        // efecto de hover: cuando pasas el mouse por encima, cambia el fondo
+        // hover piola: si no es el activo y pasas el mouse se ilumina un toque
         boton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -153,12 +141,12 @@ public class MenuLateral extends JPanel {
             @Override
             public void mouseExited(MouseEvent e) {
                 if (boton != botonActivo) {
-                    boton.setBackground(null); // volvemos al fondo transparente
+                    boton.setBackground(null);
                 }
             }
         });
 
-        // listener para cuando cambia el tema
+        // tambien actualizo si cambia el tema
         ThemeManager.onThemeChange(() -> {
             if (boton != botonActivo) {
                 boton.setForeground(ThemeManager.textoSuave());

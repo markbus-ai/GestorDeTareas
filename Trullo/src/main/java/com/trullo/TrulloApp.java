@@ -2,56 +2,57 @@ package com.trullo;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import com.trullo.ui.*;
-import com.trullo.util.EmojiIcon;
+import com.trullo.frontend.*;
+import com.trullo.recursos.EmojiIcon;
 
 import javax.swing.*;
 import java.awt.*;
 
-// Esta es la clase principal de la app, aca arranca todo
-// basicamente es el punto de entrada del programa
+// clase principal, aca arranca todo literal
+// si buscas donde empieza el programa es aca
 public class TrulloApp {
 
-    // el frame principal de la ventana, la ventana entera basically
+    // la ventana principal, la guardo aca para poder tocarla despues (cambiar tema etc)
     private static JFrame frame;
 
-    // el metodo main, aca empieza la magia
+    // el main de toda la vida, aca entra java si o si
     public static void main(String[] args) {
-        // seteamos el tema oscuro por defecto, porque claro es para los débiles
+        // lo pongo en oscuro de entrada porque el claro te quema los ojos jaja
         ThemeManager.setMode(ThemeManager.Mode.DARK);
-        aplicarTema();
+        aplicarTema(); // le mando el look and feel
 
-        // aca registramos que pasa cuando cambia el tema
-        //Basicamente le decimos "che, cuando cambies, actualiza todo"
+        // cuando alguien cambia el tema (del panel config) que se actualice todo
+        // basicamente le digo "che cuando cambie el tema hace esto"
         ThemeManager.onThemeChange(() -> {
             aplicarTema();
-            SwingUtilities.updateComponentTreeUI(frame);
+            SwingUtilities.updateComponentTreeUI(frame); // esto es para que swing repinte todo con el nuevo tema
             frame.getContentPane().setBackground(ThemeManager.fondo());
             frame.repaint();
         });
 
-        // invocamos el EDT porque Swing es así de caprichoso
+        // esto va en el hilo de swing si o si, sino se rompe todo
         SwingUtilities.invokeLater(() -> {
             frame = new JFrame("Trullo");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(1440, 800); // tamaño de la ventana, queda bien en 1080p
-            frame.setLocationRelativeTo(null); // que aparezca centrada en pantalla
+            frame.setSize(1440, 800); // tamaño piola para 1080p, ni muy grande ni muy chico
+            frame.setLocationRelativeTo(null); // centrado al medio
             frame.getContentPane().setBackground(ThemeManager.fondo());
 
-            // panel principal donde van a ir cambiando las secciones
+            // este es el panel del medio donde voy cambiando las pantallas
             JPanel contenido = new JPanel(new BorderLayout());
             contenido.setBackground(ThemeManager.fondo());
 
-            // preparamos todos los paneles de las secciones
+            // armo los paneles una sola vez asi no los creo a cada rato
             JPanel panelTareas = new PanelTareas();
             JPanel panelCalendario = new PanelCalendario();
             JPanel panelNotas = new PanelNotas();
-            JPanel panelConfig = crearPanelConfig();
+            JPanel panelConfig = crearPanelConfig(); // este lo armo aca mismo
 
-            // panel de bienvenida que se muestra al iniciar
+            // pantalla de bienvenida que se ve al abrir la app
             JPanel panelBienvenida = new JPanel(new GridBagLayout()) {
                 @Override
                 protected void paintComponent(Graphics g) {
+                    // pinto el fondo a mano para que quede liso con el tema
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(ThemeManager.fondo());
@@ -61,13 +62,14 @@ public class TrulloApp {
             };
             panelBienvenida.setOpaque(false);
 
+            // la tarjetita blanca/oscura del medio
             JPanel cardBienvenida = new JPanel() {
                 @Override
                 protected void paintComponent(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(ThemeManager.tarjeta());
-                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 24, 24);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 24, 24); // redondeado piola
                     g2.dispose();
                 }
             };
@@ -75,29 +77,29 @@ public class TrulloApp {
             cardBienvenida.setLayout(new BoxLayout(cardBienvenida, BoxLayout.Y_AXIS));
             cardBienvenida.setBorder(BorderFactory.createEmptyBorder(48, 64, 48, 64));
 
-            // icono de bienvenida pintado manualmente (librito)
+            // iconito del librito hecho a mano con lineas, no es imagen
             JPanel iconoBienvenida = new JPanel() {
                 @Override
                 protected void paintComponent(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(ThemeManager.AZUL);
-                    // libro abierto: dos rectangulos inclinados
                     int cx = getWidth() / 2;
                     int cy = getHeight() / 2;
-                    // pagina izquierda
+                    // dibujo las dos tapas del libro
                     g2.setStroke(new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                     g2.setColor(ThemeManager.AZUL);
+                    // lado izq
                     g2.drawLine(cx - 2, cy - 18, cx - 22, cy - 10);
                     g2.drawLine(cx - 22, cy - 10, cx - 22, cy + 18);
                     g2.drawLine(cx - 22, cy + 18, cx - 2, cy + 10);
                     g2.drawLine(cx - 2, cy + 10, cx - 2, cy - 18);
-                    // pagina derecha
+                    // lado der
                     g2.drawLine(cx + 2, cy - 18, cx + 22, cy - 10);
                     g2.drawLine(cx + 22, cy - 10, cx + 22, cy + 18);
                     g2.drawLine(cx + 22, cy + 18, cx + 2, cy + 10);
                     g2.drawLine(cx + 2, cy + 10, cx + 2, cy - 18);
-                    // linea central
+                    // lineita del medio
                     g2.setColor(ThemeManager.textoSuave());
                     g2.drawLine(cx, cy - 16, cx, cy + 8);
                     g2.dispose();
@@ -108,6 +110,7 @@ public class TrulloApp {
             iconoBienvenida.setMaximumSize(new Dimension(60, 50));
             iconoBienvenida.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+            // textos de bienvenida
             JLabel tituloBienvenida = new JLabel("Bienvenido a Trullo", SwingConstants.CENTER);
             tituloBienvenida.setFont(new Font("Segoe UI", Font.BOLD, 28));
             tituloBienvenida.setForeground(ThemeManager.texto());
@@ -118,6 +121,7 @@ public class TrulloApp {
             subtitulo.setForeground(ThemeManager.textoSuave());
             subtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+            // meto todo en la card
             cardBienvenida.add(iconoBienvenida);
             cardBienvenida.add(Box.createVerticalStrut(20));
             cardBienvenida.add(tituloBienvenida);
@@ -126,7 +130,7 @@ public class TrulloApp {
 
             panelBienvenida.add(cardBienvenida);
 
-            // que se actualicen los colores cuando cambie el tema
+            // si cambia el tema que se repinte la bienvenida tambien
             ThemeManager.onThemeChange(() -> {
                 contenido.setBackground(ThemeManager.fondo());
                 panelConfig.setBackground(ThemeManager.fondo());
@@ -135,12 +139,12 @@ public class TrulloApp {
                 panelBienvenida.repaint();
             });
 
-            // mostramos el panel de bienvenida al iniciar
+            // al inicio muestro la bienvenida
             contenido.add(panelBienvenida, BorderLayout.CENTER);
 
-            // el menu lateral, le pasamos una funcion que se ejecuta cuando clickean una opcion
+            // menu de la izquierda, le paso que hacer cuando tocan algo
             MenuLateral menu = new MenuLateral(seccion -> {
-                contenido.removeAll(); // limpiamos todo lo que habia antes
+                contenido.removeAll(); // saco lo que habia
                 switch (seccion) {
                     case "My Tasks":
                         contenido.add(panelTareas, BorderLayout.CENTER);
@@ -155,29 +159,28 @@ public class TrulloApp {
                         contenido.add(panelConfig, BorderLayout.CENTER);
                         break;
                 }
-                contenido.revalidate(); // le decimos al layout que recalcule todo
-                contenido.repaint(); // y que repinte
+                contenido.revalidate(); // recalculo el layout
+                contenido.repaint();
             });
 
-            // un espaciador vacio a la derecha para que no quede todo pegado
+            // espaciador a la derecha para que no quede todo pegado al borde, es visual nomas
             JPanel espaciador = new JPanel();
             espaciador.setOpaque(false);
             espaciador.setPreferredSize(new Dimension(ConstantesUI.ANCHO_ESPACIADOR, 1));
             ThemeManager.onThemeChange(() -> espaciador.setOpaque(false));
 
-            // acomodamos todo en el frame: menu a la izq, contenido al centro, espaciador a la der
+            // armo el frame final
             frame.add(menu, BorderLayout.WEST);
             frame.add(contenido, BorderLayout.CENTER);
             frame.add(espaciador, BorderLayout.EAST);
 
-            // desactivamos el boton default para que no se active con Enter
-            frame.getRootPane().setDefaultButton(null);
-            frame.setVisible(true); // y mostramos la ventana, ya está!
+            frame.getRootPane().setDefaultButton(null); // saco el enter por defecto que molesta
+            frame.setVisible(true); // y ahi si, muestro todo
         });
     }
 
-    // este metodo aplica el look and feel segun el modo actual
-    // basically cambia entre el tema oscuro y el claro de FlatLaf
+    // cambia el look and feel segun si es dark o light
+    // flatlaf es el que hace que se vea moderno
     private static void aplicarTema() {
         try {
             if (ThemeManager.isDark()) {
@@ -186,29 +189,28 @@ public class TrulloApp {
                 UIManager.setLookAndFeel(new FlatLightLaf());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // si explota que lo escupa por consola y listo
         }
-        // configuramos algunas cosas cosmeticas del tema
-        UIManager.put("Component.focusWidth", 0); // sin borde de foco feo
+        // detalles para que quede mas lindo
+        UIManager.put("Component.focusWidth", 0); // le saco el borde feo de focus
         UIManager.put("Button.arc", 14); // botones redondeados
-        UIManager.put("Component.arc", 14); // componentes redondeados
-        UIManager.put("TextComponent.arc", 14); // inputs tambien redondeados
+        UIManager.put("Component.arc", 14);
+        UIManager.put("TextComponent.arc", 14);
     }
 
-    // crea el panel de configuracion, que tiene el toggle del tema
+    // panel de config, por ahora solo tiene el switch de tema pero despues le agrego mas
     private static JPanel crearPanelConfig() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(ThemeManager.fondo());
         panel.setBorder(BorderFactory.createEmptyBorder(36, 48, 36, 48));
 
-        // titulo de la seccion
         JLabel titulo = new JLabel("Configuración");
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titulo.setForeground(ThemeManager.texto());
         titulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // la card que tiene el toggle del tema, pinta un rectangulo redondeado
+        // card del tema, la pinto redondeada a mano
         JPanel cardTema = new JPanel(new BorderLayout(16, 0)) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -220,14 +222,13 @@ public class TrulloApp {
         cardTema.setMaximumSize(new Dimension(Integer.MAX_VALUE, 64));
         cardTema.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // icono de la luna, pintado manualmente
+        // lunita dibujada a mano, dos circulos y queda la luna
         JLabel labelIcono = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(ThemeManager.AZUL);
-                // media luna
                 g2.fillOval(2, 2, 16, 16);
                 g2.setColor(ThemeManager.tarjeta());
                 g2.fillOval(7, 2, 16, 16);
@@ -237,7 +238,6 @@ public class TrulloApp {
         labelIcono.setPreferredSize(new Dimension(20, 20));
         labelIcono.setForeground(ThemeManager.AZUL);
 
-        // texto que dice "Modo de apariencia"
         JLabel labelTexto = new JLabel("Modo de apariencia");
         labelTexto.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         labelTexto.setForeground(ThemeManager.texto());
@@ -246,41 +246,38 @@ public class TrulloApp {
         info.setOpaque(false);
         info.add(labelTexto, BorderLayout.CENTER);
 
-        // el toggle para cambiar entre oscuro y claro
+        // el toggle piola para cambiar de tema
         JToggleButton toggle = new JToggleButton();
         toggle.setOpaque(true);
         toggle.setPreferredSize(new Dimension(52, 28));
         toggle.setFocusPainted(false);
         toggle.setBorderPainted(false);
         toggle.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        toggle.putClientProperty("JButton.arc", 999); // lo redondeamos fully
+        toggle.putClientProperty("JButton.arc", 999); // bien redondo
 
         actualizarToggle(toggle);
 
-        // cuando clickean el toggle, cambiamos el tema
+        // cuando lo tocan cambia el tema
         toggle.addActionListener(e -> {
             ThemeManager.toggle();
             actualizarToggle(toggle);
         });
 
-        // acomodamos todo en la card
         cardTema.add(labelIcono, BorderLayout.WEST);
         cardTema.add(info, BorderLayout.CENTER);
         cardTema.add(toggle, BorderLayout.EAST);
 
-        // separador visual
+        // lineita separadora
         JPanel separator = new JPanel();
         separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
         separator.setBackground(ThemeManager.borde());
         separator.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // label de la version
         JLabel labelVersion = new JLabel("Trullo v1.0");
         labelVersion.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         labelVersion.setForeground(ThemeManager.textoSuave());
         labelVersion.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // agregamos todo al panel con espaciadores
         panel.add(titulo);
         panel.add(Box.createVerticalStrut(28));
         panel.add(cardTema);
@@ -289,7 +286,7 @@ public class TrulloApp {
         panel.add(Box.createVerticalStrut(16));
         panel.add(labelVersion);
 
-        // listener para cuando cambia el tema, actualiza todos los colores
+        // que se actualice si cambia el tema
         ThemeManager.onThemeChange(() -> {
             panel.setBackground(ThemeManager.fondo());
             titulo.setForeground(ThemeManager.texto());
@@ -304,7 +301,7 @@ public class TrulloApp {
         return panel;
     }
 
-    // actualiza el aspecto del toggle segun el tema actual
+    // le cambia el color al toggle segun el tema, nada mas
     private static void actualizarToggle(JToggleButton toggle) {
         if (ThemeManager.isDark()) {
             toggle.setBackground(ThemeManager.AZUL);

@@ -1,6 +1,6 @@
-package com.trullo.ui;
+package com.trullo.frontend;
 
-import com.trullo.util.EmojiIcon;
+import com.trullo.recursos.EmojiIcon;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,19 +16,25 @@ import java.util.Map;
 // Este es el panel de tareas, donde el usuario ve y crea sus tareas
 // tiene filtros para ver todas, pendientes o completadas
 // y un boton para agregar nuevas tareas
+// panel de tareas, el corazon de la app
+// aca ves tus tareas, filtras y agregas nuevas
 public class PanelTareas extends JPanel {
 
     // el panel donde se listan las tarjetas de tareas
+        // donde se listan las tareas
     private final JPanel listaTareas;
 
     // la lista de objetos tarea (datos)
+        // datos de las tareas
     private final List<TareaData> tareas = new ArrayList<>();
 
     // mapa para asociar cada tarea con su panel visual (tarjeta)
     // asi cuando cambiamos el tema sabemos cual panel corresponde a cada tarea
+        // mapa tarea -> panel visual
     private final Map<TareaData, JPanel> tareasPanelMap = new HashMap<>();
 
     // el filtro que esta seleccionado actualmente
+    // que filtro estoy usando ahora
     private String filtroActual = "Todas";
 
     // los botones de filtro y el titulo
@@ -36,6 +42,7 @@ public class PanelTareas extends JPanel {
     private final JLabel titulo;
 
     // constructor, aca se arma toda la interfaz del panel
+        // armo todo el panel
     public PanelTareas() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(36, 48, 36, 48));
@@ -141,6 +148,7 @@ public class PanelTareas extends JPanel {
     }
 
     // crea un boton de filtro con el estilo adecuado
+        // crea los botoncitos de filtro
     private JButton crearBotonFiltro(String texto, boolean activo) {
         JButton btn = new JButton(texto);
         btn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -158,6 +166,7 @@ public class PanelTareas extends JPanel {
 
     // actualiza el estilo de los botones de filtro
     // el activo se pone azul, los inactivos gris
+        // pinta el activo de azul y los otros de gris
     private void actualizarFiltros(JButton activo, JButton... inactivos) {
         activo.setBackground(ThemeManager.AZUL);
         activo.setForeground(Color.WHITE);
@@ -168,6 +177,7 @@ public class PanelTareas extends JPanel {
     }
 
     // actualiza los colores de los filtros basandose en el filtroActual
+        // actualiza filtros segun filtroActual (para tema)
     private void actualizarFiltrosActivo() {
         for (JButton btn : new JButton[]{btnTodas, btnPendientes, btnCompletadas}) {
             boolean activo = btn.getText().equals(filtroActual);
@@ -178,6 +188,7 @@ public class PanelTareas extends JPanel {
 
     // refresca la lista de tareas segun el filtro actual
     // elimina todo y vuelve a agregar las que corresponden
+        // vuelve a dibujar la lista segun el filtro
     private void refrescarLista() {
         listaTareas.removeAll();
         boolean hayAlgo = false;
@@ -211,6 +222,7 @@ public class PanelTareas extends JPanel {
 
     // muestra un dialogo para crear una nueva tarea
     // tiene campo de texto para la tarea y uno opcional para el tiempo/deadline
+        // dialog para crear tarea
     private void mostrarDialogoNuevaTarea() {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Nueva tarea", true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -369,6 +381,7 @@ public class PanelTareas extends JPanel {
     }
 
     // agrega una tarea nueva a la lista y crea su tarjeta visual
+        // agrega tarea nueva y refresca
     public void agregarTarea(String texto, String deadline) {
         TareaData tarea = new TareaData(texto, deadline);
         tareas.add(tarea);
@@ -379,6 +392,7 @@ public class PanelTareas extends JPanel {
 
     // crea la tarjeta visual para una tarea
     // tiene checkbox, texto, y opcionalmente el deadline
+        // tarjetita visual con checkbox y deadline
     private JPanel crearTarjetaTarea(TareaData tarea) {
         // la tarjeta con fondo redondeado
         JPanel tarjeta = new JPanel(new BorderLayout(12, 0)) {
@@ -495,6 +509,7 @@ public class PanelTareas extends JPanel {
 
     // clase interna para guardar los datos de una tarea
     // basicamente un modelo de datos simple
+        // datos de la tarea
     private static class TareaData {
         final String texto;      // el texto de la tarea
         final String deadline;   // el tiempo/deadline (puede ser null)
@@ -508,6 +523,7 @@ public class PanelTareas extends JPanel {
     }
 
     // metodo auxiliar que delega a ConstantesUI.paintRoundRect
+        // helper para pintar redondeado
     private static void paintRoundRect(Graphics g, int w, int h, Color color, int radio) {
         ConstantesUI.paintRoundRect(g, w, h, color, radio);
     }

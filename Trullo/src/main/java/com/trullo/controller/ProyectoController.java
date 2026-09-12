@@ -61,14 +61,14 @@ public class ProyectoController {
         if (requireId) {
             validateId(proyecto.getId());
         }
-        if (proyecto.getNombre() == null || proyecto.getNombre().isBlank()) {
+        if (proyecto.getName() == null || proyecto.getName().isBlank()) {
             throw new IllegalArgumentException("nombre no puede ser nulo ni vacio");
         }
-        if (proyecto.getEstado() == null) {
+        if (proyecto.getStatus() == null) {
             throw new IllegalArgumentException("estado no puede ser nulo");
         }
-        if (proyecto.getFechaLimite() != null) {
-            validateFechaLimite(proyecto.getFechaLimite());
+        if (proyecto.getDueDate() != null) {
+            validateFechaLimite(proyecto.getDueDate());
         }
     }
 

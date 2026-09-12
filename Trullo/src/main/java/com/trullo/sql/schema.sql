@@ -36,8 +36,7 @@ CREATE TABLE reminders (
     scheduled_at TIMESTAMP NOT NULL,
     channel VARCHAR(10) NOT NULL, -- WHATSAPP | EMAIL | AMBOS
     target VARCHAR(100) NOT NULL,
-    sent BOOLEAN NOT NULL DEFAULT FALSE,
-    send_error TEXT
+    sent BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE notes (

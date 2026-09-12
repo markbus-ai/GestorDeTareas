@@ -35,7 +35,8 @@ CREATE TABLE reminders (
     task_id BIGINT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
     scheduled_at TIMESTAMP NOT NULL,
     channel VARCHAR(10) NOT NULL, -- WHATSAPP | EMAIL | AMBOS
-    target VARCHAR(100) NOT NULL,
+    target_phone VARCHAR(20),
+    target_email VARCHAR(100),
     sent BOOLEAN NOT NULL DEFAULT FALSE
 );
 

@@ -74,4 +74,15 @@ public class Proyecto {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    @Override
+    public String toString() {
+        return "Proyecto{" +
+                "id=" + id +
+                ", nombre='" + nombre + '\'' +
+                ", descripcion='" + descripcion + '\'' +
+                ", estado=" + estado +
+                ", fechaLimite=" + fechaLimite +
+                '}';
+    }
 }

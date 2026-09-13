@@ -12,9 +12,13 @@ public class DatabaseConnection {
 
     private DatabaseConnection() {
         try {
-            String url = dotenv.get("DB_URL");
+            String host = dotenv.get("DB_HOST");
+            String port = dotenv.get("DB_PORT");
+            String dbName = dotenv.get("DB_NAME");
             String user = dotenv.get("DB_USER");
             String password = dotenv.get("DB_PASSWORD");
+
+            String url = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
             this.connection = DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
             throw new RuntimeException("Error al conectar a la base de datos", e);

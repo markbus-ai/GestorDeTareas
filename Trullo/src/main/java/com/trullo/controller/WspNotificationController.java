@@ -1,5 +1,6 @@
 package com.trullo.controller;
 
+import com.trullo.exception.ValidationException;
 import java.util.regex.Pattern;
 
 // hijo de wsp, implementa al padre
@@ -12,7 +13,7 @@ public class WspNotificationController implements NotificationController {
   public void validate(String titulo, String contenido, String destino) {
     NotificationController.super.validate(titulo, contenido, destino); // lo común
     if (!pattern.matcher(destino).matches()) {
-      throw new IllegalArgumentException("ese número de wsp no tiene cara de número");
+      throw new ValidationException("número de whatsapp no es válido");
     }
   }
 

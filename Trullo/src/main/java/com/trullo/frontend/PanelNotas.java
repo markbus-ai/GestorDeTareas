@@ -8,21 +8,16 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-// panel de notas, aca van las notitas tipo post-its
-// cada nota es una card de color que podes expandir para ver el contenido
-// tiene buscador arriba y boton + abajo
 public class PanelNotas extends JPanel {
 
-        // donde van todas las tarjetitas
     private final JPanel listaNotas;
-        // lista con los datos posta, no los paneles
+
     private final List<NotaData> notas = new ArrayList<>();
-        // el buscador de arriba
+
     private final JTextField campoFiltro;
-        // el titulo Notas
+
     private final JLabel titulo;
 
-        // colores para que no sean todas iguales, va rotando
     private static final Color[] COLORES_NOTA = {
         new Color(62, 85, 105),
         new Color(72, 95, 78),
@@ -31,7 +26,6 @@ public class PanelNotas extends JPanel {
         new Color(68, 85, 98),
     };
 
-        // constructor, armo toda la pantalla
     public PanelNotas() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(36, 48, 36, 48));
@@ -76,7 +70,6 @@ public class PanelNotas extends JPanel {
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.getVerticalScrollBar().setUI(new ModernScrollBarUI());
 
-        // boton redondo verde con +
         JButton botonAgregar = new JButton("+") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -116,7 +109,6 @@ public class PanelNotas extends JPanel {
 
         botonAgregar.addActionListener(e -> mostrarDialogoNuevaNota());
 
-                // filtra al tipear
         campoFiltro.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { refrescarLista(); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { refrescarLista(); }
@@ -139,7 +131,6 @@ public class PanelNotas extends JPanel {
         });
     }
 
-        // filtra y redibuja segun buscador
     private void refrescarLista() {
         String filtro = campoFiltro.getText().trim().toLowerCase();
         listaNotas.removeAll();
@@ -179,7 +170,6 @@ public class PanelNotas extends JPanel {
         listaNotas.repaint();
     }
 
-        // crea tarjetita de color con titulo y contenido oculto
     private JPanel crearTarjetaNota(NotaData nota, int indice, int anchoCard) {
         CardState state = new CardState();
         Color colorBase = COLORES_NOTA[indice % COLORES_NOTA.length];
@@ -324,7 +314,6 @@ public class PanelNotas extends JPanel {
         return tarjeta;
     }
 
-        // dialog para crear nota
     private void mostrarDialogoNuevaNota() {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Nueva nota", true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -467,16 +456,13 @@ public class PanelNotas extends JPanel {
         dialog.setVisible(true);
     }
 
-        // agrega nota y refresca
     public void agregarNota(String titulo, String contenido) {
         notas.add(new NotaData(titulo, contenido));
         refrescarLista();
     }
 
-        // si la card esta abierta o no
     private static class CardState { boolean expandida = false; }
 
-        // datos de la nota
     private static class NotaData {
         final String titulo;
         final String contenido;

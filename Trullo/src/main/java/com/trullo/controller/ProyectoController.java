@@ -1,18 +1,17 @@
 package com.trullo.controller;
 
+import com.trullo.exception.ValidationException;
 import com.trullo.model.EstadoProyecto;
 import com.trullo.model.Proyecto;
 import com.trullo.service.ProyectoService;
 import java.time.LocalDate;
 import java.util.List;
 
-public class ProyectoController {
+public class ProyectoController implements CrudValidator {
     private final ProyectoService proyectoService;
 
     public ProyectoController(ProyectoService proyectoService) {
-        if (proyectoService == null) {
-            throw new IllegalArgumentException("proyectoService no puede ser nulo");
-        }
+        requireNonNull(proyectoService, "proyectoService");
         this.proyectoService = proyectoService;
     }
 
@@ -42,9 +41,7 @@ public class ProyectoController {
 
     public void cambiarEstado(Long id, EstadoProyecto estado) {
         validateId(id);
-        if (estado == null) {
-            throw new IllegalArgumentException("estado no puede ser nulo");
-        }
+        requireNonNull(estado, "estado");
         proyectoService.cambiarEstado(id, estado);
     }
 
@@ -55,35 +52,23 @@ public class ProyectoController {
     }
 
     private void validateProyecto(Proyecto proyecto, boolean requireId) {
-        if (proyecto == null) {
-            throw new IllegalArgumentException("proyecto no puede ser nulo");
-        }
+        requireNonNull(proyecto, "proyecto");
         if (requireId) {
             validateId(proyecto.getId());
         }
-        if (proyecto.getName() == null || proyecto.getName().isBlank()) {
-            throw new IllegalArgumentException("nombre no puede ser nulo ni vacio");
-        }
-        if (proyecto.getStatus() == null) {
-            throw new IllegalArgumentException("estado no puede ser nulo");
-        }
+        requireText(proyecto.getName(), "nombre");
+        requireNonNull(proyecto.getStatus(), "estado");
         if (proyecto.getDueDate() != null) {
             validateFechaLimite(proyecto.getDueDate());
         }
     }
 
-    private void validateId(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("id no puede ser nulo");
-        }
-    }
-
     private void validateFechaLimite(LocalDate fechaLimite) {
         if (fechaLimite == null) {
-            throw new IllegalArgumentException("fechaLimite no puede ser nula");
+            throw new ValidationException("fechaLimite no puede ser nula");
         }
         if (fechaLimite.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("fechaLimite no puede ser pasada");
+            throw new ValidationException("fechaLimite no puede ser pasada");
         }
     }
 }

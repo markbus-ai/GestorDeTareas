@@ -119,7 +119,7 @@ public class TaskController implements CrudValidator {
     // revisá la fecha antes de aceptarla, no aceptes vencidas.
     private void validateDueDate(LocalDate dueDate) {
         if (dueDate == null) {
-            throw new ValidationException("dueDate no puede ser nula");
+            throw new ValidationException("dueDate no puede ser null");
         }
         if (dueDate.isBefore(LocalDate.now())) {
             throw new ValidationException("dueDate no puede ser pasada");

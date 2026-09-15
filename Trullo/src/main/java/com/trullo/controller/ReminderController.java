@@ -54,20 +54,12 @@ public class ReminderController implements CrudValidator {
     private void validateTargets(Reminder reminder) {
         NotificationChannel channel = reminder.getChannel();
         if (channel == NotificationChannel.WHATSAPP) {
-            if (reminder.getTargetPhone() == null || reminder.getTargetPhone().isBlank()) {
-                throw new ValidationException("targetPhone requerido para WHATSAPP");
-            }
+            requireText(reminder.getTargetPhone(), "targetPhone");
         } else if (channel == NotificationChannel.EMAIL) {
-            if (reminder.getTargetEmail() == null || reminder.getTargetEmail().isBlank()) {
-                throw new ValidationException("targetEmail requerido para EMAIL");
-            }
+            requireText(reminder.getTargetEmail(), "targetEmail");
         } else if (channel == NotificationChannel.AMBOS) {
-            if (reminder.getTargetPhone() == null || reminder.getTargetPhone().isBlank()) {
-                throw new ValidationException("targetPhone requerido para WHATSAPP");
-            }
-            if (reminder.getTargetEmail() == null || reminder.getTargetEmail().isBlank()) {
-                throw new ValidationException("targetEmail requerido para EMAIL");
-            }
+            requireText(reminder.getTargetPhone(), "targetPhone");
+            requireText(reminder.getTargetEmail(), "targetEmail");
         }
     }
 }

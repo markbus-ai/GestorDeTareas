@@ -24,4 +24,11 @@ public interface CrudValidator {
             throw new ValidationException(campo + " no puede ser null");
         }
     }
+
+    // para los números que tienen que venir en positivo, días por ejemplo.
+    default void requirePositive(int value, String campo) {
+        if (value <= 0) {
+            throw new ValidationException(campo + " debe ser mayor a cero");
+        }
+    }
 }

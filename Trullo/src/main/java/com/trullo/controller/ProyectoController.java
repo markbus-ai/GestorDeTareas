@@ -64,9 +64,7 @@ public class ProyectoController implements CrudValidator {
     }
 
     private void validateFechaLimite(LocalDate fechaLimite) {
-        if (fechaLimite == null) {
-            throw new ValidationException("fechaLimite no puede ser null");
-        }
+        requireNonNull(fechaLimite, "fechaLimite");
         if (fechaLimite.isBefore(LocalDate.now())) {
             throw new ValidationException("fechaLimite no puede ser pasada");
         }

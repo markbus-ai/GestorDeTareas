@@ -1,21 +1,23 @@
 package com.trullo.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Proyecto {
     private Long id;
-    private String nombre;
-    private String descripcion;
-    private EstadoProyecto estado;
-    private LocalDate fechaLimite;
+    private String name;
+    private String description;
+    private EstadoProyecto status;
+    private LocalDate dueDate;
+    private LocalDateTime createdAt;
 
-    public Proyecto(Long id, String nombre, String descripcion, EstadoProyecto estado, LocalDate fechaLimite) {
+    public Proyecto(Long id, String name, String description, EstadoProyecto status, LocalDate dueDate) {
         this.id = id;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.estado = estado;
-        this.fechaLimite = fechaLimite;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.dueDate = dueDate;
     }
 
     public Long getId() {
@@ -26,36 +28,44 @@ public class Proyecto {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getName() {
+        return name;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public EstadoProyecto getEstado() {
-        return estado;
+    public EstadoProyecto getStatus() {
+        return status;
     }
 
-    public void setEstado(EstadoProyecto estado) {
-        this.estado = estado;
+    public void setStatus(EstadoProyecto status) {
+        this.status = status;
     }
 
-    public LocalDate getFechaLimite() {
-        return fechaLimite;
+    public LocalDate getDueDate() {
+        return dueDate;
     }
 
-    public void setFechaLimite(LocalDate fechaLimite) {
-        this.fechaLimite = fechaLimite;
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     @Override
@@ -79,10 +89,11 @@ public class Proyecto {
     public String toString() {
         return "Proyecto{" +
                 "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", descripcion='" + descripcion + '\'' +
-                ", estado=" + estado +
-                ", fechaLimite=" + fechaLimite +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", status=" + status +
+                ", dueDate=" + dueDate +
+                ", createdAt=" + createdAt +
                 '}';
     }
 }

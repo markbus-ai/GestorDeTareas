@@ -1,6 +1,5 @@
 package com.trullo.controller;
 
-import com.trullo.exception.ValidationException;
 import com.trullo.model.Note;
 import com.trullo.service.NoteService;
 import java.util.List;
@@ -9,9 +8,7 @@ public class NoteController implements CrudValidator {
     private final NoteService noteService;
 
     public NoteController(NoteService noteService) {
-        if (noteService == null) {
-            throw new ValidationException("noteService no puede ser nulo");
-        }
+        requireNonNull(noteService, "noteService");
         this.noteService = noteService;
     }
 

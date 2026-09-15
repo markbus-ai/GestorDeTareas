@@ -1,6 +1,5 @@
 package com.trullo.controller;
 
-import com.trullo.exception.ValidationException;
 import com.trullo.model.Label;
 import com.trullo.service.LabelService;
 import java.util.List;
@@ -9,9 +8,7 @@ public class LabelController implements CrudValidator {
     private final LabelService labelService;
 
     public LabelController(LabelService labelService) {
-        if (labelService == null) {
-            throw new ValidationException("labelService no puede ser nulo");
-        }
+        requireNonNull(labelService, "labelService");
         this.labelService = labelService;
     }
 

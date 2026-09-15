@@ -10,9 +10,7 @@ public class ReminderController implements CrudValidator {
     private final ReminderService reminderService;
 
     public ReminderController(ReminderService reminderService) {
-        if (reminderService == null) {
-            throw new ValidationException("reminderService no puede ser nulo");
-        }
+        requireNonNull(reminderService, "reminderService");
         this.reminderService = reminderService;
     }
 

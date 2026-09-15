@@ -12,9 +12,7 @@ public class TaskController implements CrudValidator {
     private final TaskService taskService;
 
     public TaskController(TaskService taskService) {
-        if (taskService == null) {
-            throw new ValidationException("taskService no puede ser nulo");
-        }
+        requireNonNull(taskService, "taskService");
         this.taskService = taskService;
     }
 

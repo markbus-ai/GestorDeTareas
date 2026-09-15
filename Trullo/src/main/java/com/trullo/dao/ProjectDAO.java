@@ -14,8 +14,8 @@ public class ProjectDAO implements ProjectDAOInterface {
     @Override
     public Proyecto create(Proyecto proyecto) {
         String sql = "INSERT INTO projects (name, description, status, due_date) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, proyecto.getNombre());
             stmt.setString(2, proyecto.getDescripcion());
             stmt.setString(3, proyecto.getEstado().name());
@@ -35,8 +35,8 @@ public class ProjectDAO implements ProjectDAOInterface {
     @Override
     public Proyecto update(Proyecto proyecto) {
         String sql = "UPDATE projects SET name = ?, description = ?, status = ?, due_date = ? WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, proyecto.getNombre());
             stmt.setString(2, proyecto.getDescripcion());
             stmt.setString(3, proyecto.getEstado().name());
@@ -52,8 +52,8 @@ public class ProjectDAO implements ProjectDAOInterface {
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM projects WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -64,8 +64,8 @@ public class ProjectDAO implements ProjectDAOInterface {
     @Override
     public Proyecto findById(Long id) {
         String sql = "SELECT * FROM projects WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -81,7 +81,8 @@ public class ProjectDAO implements ProjectDAOInterface {
     public List<Proyecto> findAll() {
         String sql = "SELECT * FROM projects";
         List<Proyecto> proyectos = new ArrayList<>();
-        try (Statement stmt = DatabaseConnection.getInstance().getConnection().createStatement();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 proyectos.add(mapRow(rs));

@@ -14,8 +14,8 @@ public class ReminderDAO implements ReminderDAOInterface {
     @Override
     public Reminder create(Reminder reminder) {
         String sql = "INSERT INTO reminders (task_id, scheduled_at, channel, target_phone, target_email, sent) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, reminder.getTaskId());
             stmt.setTimestamp(2, Timestamp.valueOf(reminder.getScheduledAt()));
             stmt.setString(3, reminder.getChannel().name());
@@ -37,8 +37,8 @@ public class ReminderDAO implements ReminderDAOInterface {
     @Override
     public Reminder update(Reminder reminder) {
         String sql = "UPDATE reminders SET task_id = ?, scheduled_at = ?, channel = ?, target_phone = ?, target_email = ?, sent = ? WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, reminder.getTaskId());
             stmt.setTimestamp(2, Timestamp.valueOf(reminder.getScheduledAt()));
             stmt.setString(3, reminder.getChannel().name());
@@ -56,8 +56,8 @@ public class ReminderDAO implements ReminderDAOInterface {
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM reminders WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -68,8 +68,8 @@ public class ReminderDAO implements ReminderDAOInterface {
     @Override
     public Reminder findById(Long id) {
         String sql = "SELECT * FROM reminders WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -85,7 +85,8 @@ public class ReminderDAO implements ReminderDAOInterface {
     public List<Reminder> findAll() {
         String sql = "SELECT * FROM reminders";
         List<Reminder> reminders = new ArrayList<>();
-        try (Statement stmt = DatabaseConnection.getInstance().getConnection().createStatement();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 reminders.add(mapRow(rs));
@@ -100,8 +101,8 @@ public class ReminderDAO implements ReminderDAOInterface {
     public List<Reminder> findByTaskId(Long taskId) {
         String sql = "SELECT * FROM reminders WHERE task_id = ?";
         List<Reminder> reminders = new ArrayList<>();
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, taskId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -117,7 +118,8 @@ public class ReminderDAO implements ReminderDAOInterface {
     public List<Reminder> findPending() {
         String sql = "SELECT * FROM reminders WHERE sent = false AND scheduled_at <= NOW()";
         List<Reminder> reminders = new ArrayList<>();
-        try (Statement stmt = DatabaseConnection.getInstance().getConnection().createStatement();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 reminders.add(mapRow(rs));

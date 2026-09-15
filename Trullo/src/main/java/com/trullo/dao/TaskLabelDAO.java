@@ -12,8 +12,8 @@ public class TaskLabelDAO implements TaskLabelDAOInterface {
     @Override
     public void addLabel(Long taskId, Long labelId) {
         String sql = "INSERT INTO task_label (task_id, label_id) VALUES (?, ?)";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, taskId);
             stmt.setLong(2, labelId);
             stmt.executeUpdate();
@@ -25,8 +25,8 @@ public class TaskLabelDAO implements TaskLabelDAOInterface {
     @Override
     public void removeLabel(Long taskId, Long labelId) {
         String sql = "DELETE FROM task_label WHERE task_id = ? AND label_id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, taskId);
             stmt.setLong(2, labelId);
             stmt.executeUpdate();
@@ -39,8 +39,8 @@ public class TaskLabelDAO implements TaskLabelDAOInterface {
     public List<Label> findLabelsByTaskId(Long taskId) {
         String sql = "SELECT l.* FROM labels l INNER JOIN task_label tl ON l.id = tl.label_id WHERE tl.task_id = ?";
         List<Label> labels = new ArrayList<>();
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, taskId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {

@@ -15,8 +15,8 @@ public class TaskDAO implements TaskDAOInterface {
     @Override
     public Task create(Task task) {
         String sql = "INSERT INTO tasks (title, description, status, priority, due_date, project_id) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, task.getTitle());
             stmt.setString(2, task.getDescription());
             stmt.setString(3, task.getStatus().name());
@@ -38,8 +38,8 @@ public class TaskDAO implements TaskDAOInterface {
     @Override
     public Task update(Task task) {
         String sql = "UPDATE tasks SET title = ?, description = ?, status = ?, priority = ?, due_date = ?, project_id = ? WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, task.getTitle());
             stmt.setString(2, task.getDescription());
             stmt.setString(3, task.getStatus().name());
@@ -57,8 +57,8 @@ public class TaskDAO implements TaskDAOInterface {
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM tasks WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -69,8 +69,8 @@ public class TaskDAO implements TaskDAOInterface {
     @Override
     public Task findById(Long id) {
         String sql = "SELECT * FROM tasks WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -85,21 +85,42 @@ public class TaskDAO implements TaskDAOInterface {
     @Override
     public List<Task> findAll() {
         String sql = "SELECT * FROM tasks";
-        return listQuery(sql);
+        List<Task> tasks = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                tasks.add(mapRow(rs));
+            }
+            return tasks;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al listar tareas", e);
+        }
     }
 
     @Override
     public List<Task> findByProjectId(Long projectId) {
         String sql = "SELECT * FROM tasks WHERE project_id = ?";
-        return listQueryWithParam(sql, projectId);
+        List<Task> tasks = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, projectId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                tasks.add(mapRow(rs));
+            }
+            return tasks;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al listar tareas", e);
+        }
     }
 
     @Override
     public List<Task> findByStatus(TaskStatus status) {
         String sql = "SELECT * FROM tasks WHERE status = ?";
         List<Task> tasks = new ArrayList<>();
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status.name());
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -115,8 +136,8 @@ public class TaskDAO implements TaskDAOInterface {
     public List<Task> findByPriority(TaskPriority priority) {
         String sql = "SELECT * FROM tasks WHERE priority = ?";
         List<Task> tasks = new ArrayList<>();
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, priority.name());
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -132,8 +153,8 @@ public class TaskDAO implements TaskDAOInterface {
     public List<Task> findByLabelId(Long labelId) {
         String sql = "SELECT t.* FROM tasks t INNER JOIN task_label tl ON t.id = tl.task_id WHERE tl.label_id = ?";
         List<Task> tasks = new ArrayList<>();
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, labelId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -142,34 +163,6 @@ public class TaskDAO implements TaskDAOInterface {
             return tasks;
         } catch (SQLException e) {
             throw new RuntimeException("Error al buscar tareas por etiqueta", e);
-        }
-    }
-
-    private List<Task> listQuery(String sql) {
-        List<Task> tasks = new ArrayList<>();
-        try (Statement stmt = DatabaseConnection.getInstance().getConnection().createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                tasks.add(mapRow(rs));
-            }
-            return tasks;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al listar tareas", e);
-        }
-    }
-
-    private List<Task> listQueryWithParam(String sql, Long param) {
-        List<Task> tasks = new ArrayList<>();
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
-            stmt.setLong(1, param);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                tasks.add(mapRow(rs));
-            }
-            return tasks;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al listar tareas", e);
         }
     }
 

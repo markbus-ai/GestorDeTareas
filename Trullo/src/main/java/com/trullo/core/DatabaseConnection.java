@@ -1,48 +1,51 @@
 package com.trullo.core;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static DatabaseConnection instance;
-    private Connection connection;
+    private static final DatabaseConnection INSTANCE = new DatabaseConnection();
+    private final HikariDataSource dataSource;
     private static final Dotenv dotenv = Dotenv.load();
 
-    private DatabaseConnection() {
-        try {
-            String host = dotenv.get("DB_HOST");
-            String port = dotenv.get("DB_PORT");
-            String dbName = dotenv.get("DB_NAME");
-            String user = dotenv.get("DB_USER");
-            String password = dotenv.get("DB_PASSWORD");
+    private static final int POOL_MIN = 2;
+    private static final int POOL_MAX = 10;
+    private static final long CONNECTION_TIMEOUT = 30000;
+    private static final long IDLE_TIMEOUT = 600000;
+    private static final long MAX_LIFETIME = 1800000;
 
-            String url = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
-            this.connection = DriverManager.getConnection(url, user, password);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al conectar a la base de datos", e);
-        }
+    private DatabaseConnection() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:postgresql://" +
+                dotenv.get("DB_HOST") + ":" +
+                dotenv.get("DB_PORT") + "/" +
+                dotenv.get("DB_NAME"));
+        config.setUsername(dotenv.get("DB_USER"));
+        config.setPassword(dotenv.get("DB_PASSWORD"));
+        config.setMinimumIdle(POOL_MIN);
+        config.setMaximumPoolSize(POOL_MAX);
+        config.setConnectionTimeout(CONNECTION_TIMEOUT);
+        config.setIdleTimeout(IDLE_TIMEOUT);
+        config.setMaxLifetime(MAX_LIFETIME);
+
+        this.dataSource = new HikariDataSource(config);
     }
 
     public static DatabaseConnection getInstance() {
-        if (instance == null) {
-            instance = new DatabaseConnection();
-        }
-        return instance;
+        return INSTANCE;
     }
 
-    public Connection getConnection() {
-        return connection;
+    public Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
     }
 
     public void close() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al cerrar la conexión", e);
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
         }
     }
 }

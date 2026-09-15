@@ -12,8 +12,8 @@ public class LabelDAO implements LabelDAOInterface {
     @Override
     public Label create(Label label) {
         String sql = "INSERT INTO labels (name, color) VALUES (?, ?)";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, label.getName());
             stmt.setString(2, label.getColor());
             stmt.executeUpdate();
@@ -31,8 +31,8 @@ public class LabelDAO implements LabelDAOInterface {
     @Override
     public Label update(Label label) {
         String sql = "UPDATE labels SET name = ?, color = ? WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, label.getName());
             stmt.setString(2, label.getColor());
             stmt.setLong(3, label.getId());
@@ -46,8 +46,8 @@ public class LabelDAO implements LabelDAOInterface {
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM labels WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -58,8 +58,8 @@ public class LabelDAO implements LabelDAOInterface {
     @Override
     public Label findById(Long id) {
         String sql = "SELECT * FROM labels WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -75,7 +75,8 @@ public class LabelDAO implements LabelDAOInterface {
     public List<Label> findAll() {
         String sql = "SELECT * FROM labels";
         List<Label> labels = new ArrayList<>();
-        try (Statement stmt = DatabaseConnection.getInstance().getConnection().createStatement();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 labels.add(mapRow(rs));
@@ -90,8 +91,8 @@ public class LabelDAO implements LabelDAOInterface {
     public List<Label> findByTaskId(Long taskId) {
         String sql = "SELECT l.* FROM labels l INNER JOIN task_label tl ON l.id = tl.label_id WHERE tl.task_id = ?";
         List<Label> labels = new ArrayList<>();
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, taskId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {

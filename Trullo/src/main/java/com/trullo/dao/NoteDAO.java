@@ -13,8 +13,8 @@ public class NoteDAO implements NoteDAOInterface {
     @Override
     public Note create(Note note) {
         String sql = "INSERT INTO notes (title, content) VALUES (?, ?)";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, note.getTitle());
             stmt.setString(2, note.getContent());
             stmt.executeUpdate();
@@ -32,8 +32,8 @@ public class NoteDAO implements NoteDAOInterface {
     @Override
     public Note update(Note note) {
         String sql = "UPDATE notes SET title = ?, content = ? WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, note.getTitle());
             stmt.setString(2, note.getContent());
             stmt.setLong(3, note.getId());
@@ -47,8 +47,8 @@ public class NoteDAO implements NoteDAOInterface {
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM notes WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -59,8 +59,8 @@ public class NoteDAO implements NoteDAOInterface {
     @Override
     public Note findById(Long id) {
         String sql = "SELECT * FROM notes WHERE id = ?";
-        try (PreparedStatement stmt = DatabaseConnection.getInstance().getConnection()
-                .prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -76,7 +76,8 @@ public class NoteDAO implements NoteDAOInterface {
     public List<Note> findAll() {
         String sql = "SELECT * FROM notes";
         List<Note> notes = new ArrayList<>();
-        try (Statement stmt = DatabaseConnection.getInstance().getConnection().createStatement();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 notes.add(mapRow(rs));

@@ -79,9 +79,7 @@ public class TaskController implements CrudValidator {
     }
 
     public List<Task> listarProximasAVencer(int dias) {
-        if (dias <= 0) {
-            throw new ValidationException("dias debe ser mayor a cero");
-        }
+        requirePositive(dias, "dias");
         return taskService.listarProximasAVencer(dias);
     }
 
@@ -118,9 +116,7 @@ public class TaskController implements CrudValidator {
 
     // revisá la fecha antes de aceptarla, no aceptes vencidas.
     private void validateDueDate(LocalDate dueDate) {
-        if (dueDate == null) {
-            throw new ValidationException("dueDate no puede ser null");
-        }
+        requireNonNull(dueDate, "dueDate");
         if (dueDate.isBefore(LocalDate.now())) {
             throw new ValidationException("dueDate no puede ser pasada");
         }

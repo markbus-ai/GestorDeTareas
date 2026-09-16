@@ -6,22 +6,25 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+// pantalla de ajustes: tema, idioma, notificaciones, términos y creadores, todo en cards
 public class PanelConfiguracion extends JPanel {
 
+    // título, iconito del tema y versión de abajo
     private JLabel titulo;
     private JLabel labelIcono;
     private JLabel labelTexto;
     private JLabel labelVersion;
 
+    // las 5 cards, todas salen del mismo crearCardBase
     private JPanel cardTema;
     private JPanel cardIdioma;
     private JPanel cardNotificacion;
     private JPanel cardTerminos;
     private JPanel cardCreadores;
-    private JPanel separator;
     private JScrollPane scrollPane;
     private JPanel contenidoRef;
 
+    // controles de cada card
     private JToggleButton toggle;
     private JComboBox<String> comboIdioma;
     private JComboBox<String> comboNotificacion;
@@ -29,6 +32,7 @@ public class PanelConfiguracion extends JPanel {
     private JTextField campoNotificacion;
     private JLabel labelCampoNoti;
 
+    // contenido que se expande y sus flechitas
     private JPanel panelTerminosContent;
     private JPanel panelCreadoresContent;
     private JLabel chevronTerminos;
@@ -41,11 +45,13 @@ public class PanelConfiguracion extends JPanel {
         configurarActualizacionTema();
     }
 
+    // armo toda la pantalla de una, card por card de arriba para abajo
     private void inicializar() {
 
         setLayout(new BorderLayout());
         setBackground(ThemeManager.fondo());
 
+        // columna vertical con todo adentro, va dentro de un scroll por si no entra
         contenidoRef = new JPanel();
         contenidoRef.setLayout(new BoxLayout(contenidoRef, BoxLayout.Y_AXIS));
         contenidoRef.setBackground(ThemeManager.fondo());
@@ -68,39 +74,8 @@ public class PanelConfiguracion extends JPanel {
         titulo.setForeground(ThemeManager.texto());
         titulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        cardTema = new JPanel(new BorderLayout(16, 0)) {
-
-            @Override
-            protected void paintComponent(Graphics g) {
-                ConstantesUI.paintRoundRect(
-                        g,
-                        getWidth(),
-                        getHeight(),
-                        ThemeManager.tarjeta(),
-                        ConstantesUI.RADIO
-                );
-            }
-        };
-
-        cardTema.setOpaque(false);
-
-        cardTema.setBorder(
-                BorderFactory.createEmptyBorder(
-                        16,
-                        20,
-                        16,
-                        20
-                )
-        );
-
-        cardTema.setMaximumSize(
-                new Dimension(
-                        Integer.MAX_VALUE,
-                        64
-                )
-        );
-
-        cardTema.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // card del tema con su toggle luna/sol
+        cardTema = crearCardBase(new BorderLayout(16, 0), 64);
 
         labelIcono = new JLabel() {
 
@@ -114,7 +89,7 @@ public class PanelConfiguracion extends JPanel {
                         RenderingHints.VALUE_ANTIALIAS_ON
                 );
 
-                g2.setColor(ThemeManager.AZUL);
+                g2.setColor(getForeground());
                 g2.fillOval(2, 2, 16, 16);
 
                 g2.setColor(ThemeManager.tarjeta());
@@ -124,6 +99,7 @@ public class PanelConfiguracion extends JPanel {
             }
         };
 
+        labelIcono.setForeground(ThemeManager.AZUL);
         labelIcono.setPreferredSize(
                 new Dimension(20, 20)
         );
@@ -175,6 +151,7 @@ public class PanelConfiguracion extends JPanel {
 
         actualizarToggle();
 
+        // al tocar cambia el tema en toda la app
         toggle.addActionListener(e -> {
 
             ThemeManager.toggle();
@@ -197,16 +174,9 @@ public class PanelConfiguracion extends JPanel {
                 BorderLayout.EAST
         );
 
-        cardIdioma = new JPanel(new BorderLayout(16, 0)) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                ConstantesUI.paintRoundRect(g, getWidth(), getHeight(), ThemeManager.tarjeta(), ConstantesUI.RADIO);
-            }
-        };
-        cardIdioma.setOpaque(false);
-        cardIdioma.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
-        cardIdioma.setMaximumSize(new Dimension(Integer.MAX_VALUE, 64));
-        cardIdioma.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // card del idioma, por ahora WIP deshabilitado
+
+        cardIdioma = crearCardBase(new BorderLayout(16, 0), 64);
 
         JLabel iconoIdioma = new JLabel() {
             @Override
@@ -234,29 +204,21 @@ public class PanelConfiguracion extends JPanel {
         infoIdioma.setOpaque(false);
         infoIdioma.add(labelIdioma, BorderLayout.CENTER);
 
-        comboIdioma = new JComboBox<>(new String[]{"Español (ES)", "Português (PT)", "English (EN)"});
+        comboIdioma = new JComboBox<>(new String[]{"Español (ES)"});
         comboIdioma.setSelectedIndex(0);
         estilizarCombo(comboIdioma);
         comboIdioma.setPreferredSize(new Dimension(170, 32));
-        comboIdioma.addActionListener(e -> {
-            String sel = (String) comboIdioma.getSelectedItem();
-            comboIdioma.setToolTipText("Idioma seleccionado: " + sel);
-        });
+        // WIP: sin i18n real, se deshabilita para no sugerir una función que aún no existe
+        comboIdioma.setEnabled(false);
+        comboIdioma.setToolTipText("Próximamente (WIP): solo Español disponible");
 
         cardIdioma.add(iconoIdioma, BorderLayout.WEST);
         cardIdioma.add(infoIdioma, BorderLayout.CENTER);
         cardIdioma.add(comboIdioma, BorderLayout.EAST);
 
-        cardNotificacion = new JPanel(new BorderLayout(0, 0)) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                ConstantesUI.paintRoundRect(g, getWidth(), getHeight(), ThemeManager.tarjeta(), ConstantesUI.RADIO);
-            }
-        };
-        cardNotificacion.setOpaque(false);
-        cardNotificacion.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
-        cardNotificacion.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
-        cardNotificacion.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // card de notificaciones con su input que aparece según el combo
+
+        cardNotificacion = crearCardBase(new BorderLayout(0, 0), 140);
 
         JPanel headerNoti = new JPanel(new BorderLayout(16, 0));
         headerNoti.setOpaque(false);
@@ -316,6 +278,13 @@ public class PanelConfiguracion extends JPanel {
                 BorderFactory.createEmptyBorder(8, 12, 8, 12)
         ));
         campoNotificacion.putClientProperty("JTextField.arc", ConstantesUI.RADIO);
+        // solo validación local: avisa formato pero aún no guarda en ningún lado
+        campoNotificacion.setToolTipText("Solo validación local (WIP: aún no se guarda)");
+        campoNotificacion.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { validarNotificacion(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { validarNotificacion(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { validarNotificacion(); }
+        });
 
         panelNotiInputWrapper.add(labelCampoNoti, BorderLayout.WEST);
         panelNotiInputWrapper.add(campoNotificacion, BorderLayout.CENTER);
@@ -325,21 +294,14 @@ public class PanelConfiguracion extends JPanel {
         cardNotificacion.add(headerNoti, BorderLayout.NORTH);
         cardNotificacion.add(panelNotiInputWrapper, BorderLayout.CENTER);
 
-        cardTerminos = new JPanel(new BorderLayout(0, 0)) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                ConstantesUI.paintRoundRect(g, getWidth(), getHeight(), ThemeManager.tarjeta(), ConstantesUI.RADIO);
-            }
-        };
-        cardTerminos.setOpaque(false);
-        cardTerminos.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
-        cardTerminos.setMaximumSize(new Dimension(Integer.MAX_VALUE, 64));
-        cardTerminos.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // card de términos que se expande al tocarla
+        cardTerminos = crearCardBase(new BorderLayout(0, 0), 64);
         cardTerminos.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         JPanel headerTerminos = new JPanel(new BorderLayout(16, 0));
         headerTerminos.setOpaque(false);
 
+        // escudito verde dibujado a mano
         JLabel iconoTerminos = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -369,9 +331,8 @@ public class PanelConfiguracion extends JPanel {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(ThemeManager.textoSuave());
+                g2.setColor(getForeground());
                 g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                int w = getWidth(), h = getHeight();
                 if (terminosExpandido) {
 
                     g2.drawLine(6, 12, 10, 8);
@@ -387,6 +348,7 @@ public class PanelConfiguracion extends JPanel {
         chevronTerminos.setHorizontalAlignment(SwingConstants.CENTER);
         chevronTerminos.setPreferredSize(new Dimension(20, 20));
         chevronTerminos.setOpaque(false);
+        chevronTerminos.setForeground(ThemeManager.textoSuave());
 
         JPanel infoTerminos = new JPanel(new BorderLayout());
         infoTerminos.setOpaque(false);
@@ -435,7 +397,7 @@ public class PanelConfiguracion extends JPanel {
                 terminosExpandido = !terminosExpandido;
                 panelTerminosContent.setVisible(terminosExpandido);
                 chevronTerminos.repaint();
-                cardTerminos.setMaximumSize(new Dimension(Integer.MAX_VALUE, terminosExpandido ? 260 : 64));
+                cardTerminos.setMaximumSize(new Dimension(Integer.MAX_VALUE, terminosExpandido ? Integer.MAX_VALUE : 64));
                 revalidate();
                 repaint();
             }
@@ -444,21 +406,14 @@ public class PanelConfiguracion extends JPanel {
         headerTerminos.addMouseListener(toggleTerminos);
         chevronTerminos.addMouseListener(toggleTerminos);
 
-        cardCreadores = new JPanel(new BorderLayout(0, 0)) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                ConstantesUI.paintRoundRect(g, getWidth(), getHeight(), ThemeManager.tarjeta(), ConstantesUI.RADIO);
-            }
-        };
-        cardCreadores.setOpaque(false);
-        cardCreadores.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
-        cardCreadores.setMaximumSize(new Dimension(Integer.MAX_VALUE, 64));
-        cardCreadores.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // card de creadores que también se expande al tocarla
+        cardCreadores = crearCardBase(new BorderLayout(0, 0), 64);
         cardCreadores.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         JPanel headerCreadores = new JPanel(new BorderLayout(16, 0));
         headerCreadores.setOpaque(false);
 
+        // iconito de personitas dibujado a mano
         JLabel iconoCreadores = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -485,7 +440,7 @@ public class PanelConfiguracion extends JPanel {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(ThemeManager.textoSuave());
+                g2.setColor(getForeground());
                 g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                 if (creadoresExpandido) {
                     g2.drawLine(6, 12, 10, 8);
@@ -500,6 +455,7 @@ public class PanelConfiguracion extends JPanel {
         chevronCreadores.setHorizontalAlignment(SwingConstants.CENTER);
         chevronCreadores.setPreferredSize(new Dimension(20, 20));
         chevronCreadores.setOpaque(false);
+        chevronCreadores.setForeground(ThemeManager.textoSuave());
 
         JPanel infoCreadores = new JPanel(new BorderLayout());
         infoCreadores.setOpaque(false);
@@ -515,12 +471,6 @@ public class PanelConfiguracion extends JPanel {
         panelCreadoresContent.setBorder(BorderFactory.createEmptyBorder(14, 0, 0, 0));
         panelCreadoresContent.setVisible(false);
 
-        JPanel sepCreadores = new JPanel();
-        sepCreadores.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
-        sepCreadores.setBackground(ThemeManager.borde());
-        sepCreadores.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        panelCreadoresContent.add(sepCreadores);
         panelCreadoresContent.add(Box.createVerticalStrut(12));
         panelCreadoresContent.add(crearFilaCreador("Santiago Vera", "Desarrollador", ThemeManager.AZUL));
         panelCreadoresContent.add(Box.createVerticalStrut(10));
@@ -537,7 +487,7 @@ public class PanelConfiguracion extends JPanel {
                 creadoresExpandido = !creadoresExpandido;
                 panelCreadoresContent.setVisible(creadoresExpandido);
                 chevronCreadores.repaint();
-                cardCreadores.setMaximumSize(new Dimension(Integer.MAX_VALUE, creadoresExpandido ? 240 : 64));
+                cardCreadores.setMaximumSize(new Dimension(Integer.MAX_VALUE, creadoresExpandido ? Integer.MAX_VALUE : 64));
                 revalidate();
                 repaint();
             }
@@ -546,23 +496,7 @@ public class PanelConfiguracion extends JPanel {
         headerCreadores.addMouseListener(toggleCreadores);
         chevronCreadores.addMouseListener(toggleCreadores);
 
-        separator = new JPanel();
-
-        separator.setMaximumSize(
-                new Dimension(
-                        Integer.MAX_VALUE,
-                        1
-                )
-        );
-
-        separator.setBackground(
-                ThemeManager.borde()
-        );
-
-        separator.setAlignmentX(
-                Component.LEFT_ALIGNMENT
-        );
-
+        // pie con la versión, abajo de todo
         labelVersion = new JLabel(
                 "Trullo v1.0  •  Hecho por Argentinos en Argentina"
         );
@@ -579,6 +513,7 @@ public class PanelConfiguracion extends JPanel {
                 Component.LEFT_ALIGNMENT
         );
 
+        // apilo todo con aire de 16 entre cards
         contenido.add(titulo);
         contenido.add(Box.createVerticalStrut(28));
         contenido.add(cardTema);
@@ -591,10 +526,9 @@ public class PanelConfiguracion extends JPanel {
         contenido.add(Box.createVerticalStrut(16));
         contenido.add(cardCreadores);
         contenido.add(Box.createVerticalStrut(16));
-        contenido.add(separator);
-        contenido.add(Box.createVerticalStrut(16));
         contenido.add(labelVersion);
 
+        // scroll por si no entra todo en alto
         scrollPane = new JScrollPane(contenido);
         scrollPane.setBorder(null);
         scrollPane.getViewport().setBackground(ThemeManager.fondo());
@@ -606,6 +540,7 @@ public class PanelConfiguracion extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    // filita con avatar de inicial + nombre y rol
     private JPanel crearFilaCreador(String nombre, String rol, Color color) {
         JPanel fila = new JPanel(new BorderLayout(12, 0));
         fila.setOpaque(false);
@@ -651,14 +586,22 @@ public class PanelConfiguracion extends JPanel {
         return fila;
     }
 
-    private JLabel crearLabelContacto(String texto) {
-        JLabel lbl = new JLabel(texto);
-        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lbl.setForeground(ThemeManager.textoSuave());
-        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return lbl;
+    // base común de las 5 cards: pintado redondeado, márgenes y ancho completo
+    private JPanel crearCardBase(LayoutManager layout, int alturaMax) {
+        JPanel card = new JPanel(layout) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                ConstantesUI.paintRoundRect(g, getWidth(), getHeight(), ThemeManager.tarjeta(), ConstantesUI.RADIO);
+            }
+        };
+        card.setOpaque(false);
+        card.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, alturaMax));
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return card;
     }
 
+    // deja los combos con los colores del tema, incluido el desplegable
     private void estilizarCombo(JComboBox<String> combo) {
         combo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         combo.setBackground(ThemeManager.input());
@@ -683,6 +626,7 @@ public class PanelConfiguracion extends JPanel {
         });
     }
 
+    // muestra el input que toca según el combo y agranda la card si hace falta
     private void actualizarCampoNotificacion() {
         String sel = (String) comboNotificacion.getSelectedItem();
         if (sel == null || sel.equals("No notificar")) {
@@ -703,10 +647,33 @@ public class PanelConfiguracion extends JPanel {
         } else {
             cardNotificacion.setMaximumSize(new Dimension(Integer.MAX_VALUE, 64));
         }
+        validarNotificacion();
         revalidate();
         repaint();
     }
 
+    // validación tranqui solo local: tiñe de rosa si el formato no cierra
+    private void validarNotificacion() {
+        if (campoNotificacion == null || comboNotificacion == null) return;
+        String sel = (String) comboNotificacion.getSelectedItem();
+        String texto = campoNotificacion.getText() == null ? "" : campoNotificacion.getText().trim();
+        if (sel == null || sel.equals("No notificar") || texto.isEmpty()) {
+            campoNotificacion.setBorder(new CompoundBorder(
+                    BorderFactory.createLineBorder(ThemeManager.borde(), 1, true),
+                    BorderFactory.createEmptyBorder(8, 12, 8, 12)));
+            campoNotificacion.setToolTipText("Solo validación local (WIP: aún no se guarda)");
+            return;
+        }
+        boolean valido = sel.equals("WhatsApp") ? texto.matches("[+\\d][\\d\\s-]{5,}") && texto.replaceAll("\\D", "").length() >= 6
+                : texto.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+");
+        campoNotificacion.setBorder(new CompoundBorder(
+                BorderFactory.createLineBorder(valido ? ThemeManager.borde() : ThemeManager.ROSA, valido ? 1 : 2, true),
+                BorderFactory.createEmptyBorder(8, 12, 8, 12)));
+        campoNotificacion.setToolTipText(valido ? "Válido (solo validación local, aún no se guarda)"
+                : "Formato inválido (solo validación local, aún no se guarda)");
+    }
+
+    // me suscribo al tema y repinto todo cuando cambia
     private void configurarActualizacionTema() {
 
         ThemeManager.onThemeChange(() -> {
@@ -721,7 +688,6 @@ public class PanelConfiguracion extends JPanel {
             labelIcono.setForeground(ThemeManager.AZUL);
             labelTexto.setForeground(ThemeManager.texto());
             labelVersion.setForeground(ThemeManager.textoSuave());
-            separator.setBackground(ThemeManager.borde());
             chevronTerminos.setForeground(ThemeManager.textoSuave());
             chevronCreadores.setForeground(ThemeManager.textoSuave());
 
@@ -753,6 +719,7 @@ public class PanelConfiguracion extends JPanel {
         });
     }
 
+    // dibuja el toggle según el tema: luna en oscuro, sol en claro
     private void actualizarToggle() {
 
         Icon icono;
@@ -774,7 +741,7 @@ public class PanelConfiguracion extends JPanel {
                 }
             };
         } else {
-            toggle.setBackground(new Color(180, 185, 198));
+            toggle.setBackground(ThemeManager.toggleOff());
             toggle.setToolTipText("Cambiar a modo oscuro");
             toggle.setSelected(false);
             icono = new Icon() {
@@ -783,9 +750,9 @@ public class PanelConfiguracion extends JPanel {
                 @Override public void paintIcon(Component c, Graphics g, int x, int y) {
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    g2.setColor(new Color(255, 220, 80));
+                    g2.setColor(ThemeManager.sol());
                     g2.fillOval(x+2, y+2, 12, 12);
-                    g2.setColor(new Color(255, 220, 80));
+                    g2.setColor(ThemeManager.sol());
                     g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
                     for (int i=0;i<4;i++) {

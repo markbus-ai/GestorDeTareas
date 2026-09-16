@@ -1,26 +1,27 @@
 package com.trullo.frontend;
 
-import com.trullo.recursos.EmojiIcon;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// panel de tareas, el corazón de la app: ves, filtrás y agregás lo pendiente
 public class PanelTareas extends JPanel {
 
+    // donde van las tarjetitas, una abajo de la otra
     private final JPanel listaTareas;
 
+    // los datos posta, separados de lo visual
     private final List<TareaData> tareas = new ArrayList<>();
 
+    // mapa tarea -> su tarjeta, así refrescar es reutilizar y no recrear todo
     private final Map<TareaData, JPanel> tareasPanelMap = new HashMap<>();
 
+    // qué filtro estoy mirando ahora
     private String filtroActual = "Todas";
 
     private final JButton btnTodas, btnPendientes, btnCompletadas;
@@ -31,10 +32,12 @@ public class PanelTareas extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(36, 48, 36, 48));
         setBackground(ThemeManager.fondo());
 
+        // título de la sección
         titulo = new JLabel("My Tasks");
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titulo.setForeground(ThemeManager.texto());
 
+        // filtros Todas / Pendientes / Completadas
         JPanel panelFiltros = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         panelFiltros.setOpaque(false);
 
@@ -42,6 +45,7 @@ public class PanelTareas extends JPanel {
         btnPendientes = crearBotonFiltro("Pendientes", false);
         btnCompletadas = crearBotonFiltro("Completadas", false);
 
+        // cada filtro cambia el estado y redibuja la lista
         btnTodas.addActionListener(e -> { filtroActual = "Todas"; actualizarFiltros(btnTodas, btnPendientes, btnCompletadas); refrescarLista(); });
         btnPendientes.addActionListener(e -> { filtroActual = "Pendientes"; actualizarFiltros(btnPendientes, btnTodas, btnCompletadas); refrescarLista(); });
         btnCompletadas.addActionListener(e -> { filtroActual = "Completadas"; actualizarFiltros(btnCompletadas, btnTodas, btnPendientes); refrescarLista(); });
@@ -50,6 +54,7 @@ public class PanelTareas extends JPanel {
         panelFiltros.add(btnPendientes);
         panelFiltros.add(btnCompletadas);
 
+        // título arriba, filtros abajo
         JPanel panelSuperior = new JPanel();
         panelSuperior.setLayout(new BoxLayout(panelSuperior, BoxLayout.Y_AXIS));
         panelSuperior.setOpaque(false);
@@ -57,17 +62,20 @@ public class PanelTareas extends JPanel {
         panelSuperior.add(Box.createVerticalStrut(18));
         panelSuperior.add(panelFiltros);
 
+        // columna vertical donde van las tarjetas
         listaTareas = new JPanel();
         listaTareas.setLayout(new BoxLayout(listaTareas, BoxLayout.Y_AXIS));
         listaTareas.setOpaque(false);
 
+        // scroll por si hay muchas
         JScrollPane scroll = new JScrollPane(listaTareas);
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
         scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(14);
+        scroll.getVerticalScrollBar().setUnitIncrement(14); // velocidad del scroll
         scroll.getVerticalScrollBar().setUI(new ModernScrollBarUI());
 
+        // botón flotante + estilo FAB, dibujado a mano
         JButton botonAgregar = new JButton("+") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -96,6 +104,7 @@ public class PanelTareas extends JPanel {
         botonAgregar.setMaximumSize(new Dimension(52, 52));
         botonAgregar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
+        // el + va abajo a la derecha
         JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         panelBoton.setOpaque(false);
         panelBoton.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
@@ -105,8 +114,10 @@ public class PanelTareas extends JPanel {
         add(scroll, BorderLayout.CENTER);
         add(panelBoton, BorderLayout.SOUTH);
 
+        // el + abre el diálogo de nueva tarea
         botonAgregar.addActionListener(e -> mostrarDialogoNuevaTarea());
 
+        // si cambia el tema repinto todo
         ThemeManager.onThemeChange(() -> {
             setBackground(ThemeManager.fondo());
             titulo.setForeground(ThemeManager.texto());
@@ -118,6 +129,7 @@ public class PanelTareas extends JPanel {
         });
     }
 
+    // crea un botoncito de filtro con su estilo
     private JButton crearBotonFiltro(String texto, boolean activo) {
         JButton btn = new JButton(texto);
         btn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -133,6 +145,7 @@ public class PanelTareas extends JPanel {
         return btn;
     }
 
+    // pinta el activo de azul y los otros de gris
     private void actualizarFiltros(JButton activo, JButton... inactivos) {
         activo.setBackground(ThemeManager.AZUL);
         activo.setForeground(Color.WHITE);
@@ -142,6 +155,7 @@ public class PanelTareas extends JPanel {
         }
     }
 
+    // repinta los filtros según el actual, se usa cuando cambia el tema
     private void actualizarFiltrosActivo() {
         for (JButton btn : new JButton[]{btnTodas, btnPendientes, btnCompletadas}) {
             boolean activo = btn.getText().equals(filtroActual);
@@ -150,6 +164,7 @@ public class PanelTareas extends JPanel {
         }
     }
 
+    // vuelve a dibujar la lista según el filtro que esté puesto
     private void refrescarLista() {
         listaTareas.removeAll();
         boolean hayAlgo = false;
@@ -164,12 +179,13 @@ public class PanelTareas extends JPanel {
                 JPanel tarjeta = tareasPanelMap.get(tarea);
                 if (tarjeta != null) {
                     listaTareas.add(tarjeta);
-                    listaTareas.add(Box.createVerticalStrut(6));
+                    listaTareas.add(Box.createVerticalStrut(6)); // aire entre tarjetas
                     hayAlgo = true;
                 }
             }
         }
 
+        // si no hay nada que mostrar aviso en vez de dejarlo vacío
         if (!hayAlgo) {
             JLabel vacio = new JLabel("No hay tareas", SwingConstants.CENTER);
             vacio.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -181,6 +197,7 @@ public class PanelTareas extends JPanel {
         listaTareas.repaint();
     }
 
+    // diálogo para crear una tarea con texto y tiempo opcional
     private void mostrarDialogoNuevaTarea() {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Nueva tarea", true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -188,6 +205,7 @@ public class PanelTareas extends JPanel {
         dialog.setLocationRelativeTo(this);
         dialog.setResizable(false);
 
+        // fondo del diálogo redondeado
         JPanel panelPrincipal = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -200,6 +218,7 @@ public class PanelTareas extends JPanel {
         };
         panelPrincipal.setOpaque(false);
 
+        // cabecera con título y la x para cerrar
         JPanel header = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -232,6 +251,7 @@ public class PanelTareas extends JPanel {
         header.add(labelHeader, BorderLayout.WEST);
         header.add(botonCerrar, BorderLayout.EAST);
 
+        // campos del formulario
         JPanel contenido = new JPanel();
         contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
         contenido.setOpaque(false);
@@ -281,6 +301,7 @@ public class PanelTareas extends JPanel {
         contenido.add(Box.createVerticalStrut(8));
         contenido.add(campoTiempo);
 
+        // botones de abajo a la derecha
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         footer.setOpaque(false);
         footer.setBorder(BorderFactory.createEmptyBorder(8, 0, 16, 0));
@@ -317,6 +338,7 @@ public class PanelTareas extends JPanel {
             }
         });
 
+        // ENTER para crear sin tener que clickear el botón
         panelPrincipal.registerKeyboardAction(e -> botonCrear.doClick(), KeyStroke.getKeyStroke("ENTER"), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         footer.add(botonCancelar);
@@ -331,6 +353,7 @@ public class PanelTareas extends JPanel {
         dialog.setVisible(true);
     }
 
+    // crea la tarea, le arma su tarjeta y refresca
     public void agregarTarea(String texto, String deadline) {
         TareaData tarea = new TareaData(texto, deadline);
         tareas.add(tarea);
@@ -339,6 +362,7 @@ public class PanelTareas extends JPanel {
         refrescarLista();
     }
 
+    // armo la tarjetita de una tarea con su check y su deadline
     private JPanel crearTarjetaTarea(TareaData tarea) {
 
         JPanel tarjeta = new JPanel(new BorderLayout(12, 0)) {
@@ -352,6 +376,7 @@ public class PanelTareas extends JPanel {
         tarjeta.setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
         tarjeta.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // check dibujado a mano, cuadrado redondeado que se pinta de azul
         JCheckBox check = new JCheckBox() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -400,6 +425,7 @@ public class PanelTareas extends JPanel {
         JPanel derecha = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         derecha.setOpaque(false);
 
+        // holder porque el listener de tema lo necesita mutar desde adentro
         JLabel[] labelDeadlineHolder = new JLabel[1];
         if (tarea.deadline != null && !tarea.deadline.isEmpty()) {
             JLabel labelDeadline = new JLabel(" " + tarea.deadline + " ");
@@ -423,7 +449,7 @@ public class PanelTareas extends JPanel {
                 attrs.put(TextAttribute.STRIKETHROUGH, Boolean.TRUE);
                 labelTexto.setFont(labelTexto.getFont().deriveFont(attrs));
                 labelTexto.setForeground(ThemeManager.textoSuave());
-
+                // delay de 1s para que se vea el tachado antes de borrar
                 Timer timer = new Timer(1000, e2 -> {
                     tareas.remove(tarea);
                     tareasPanelMap.remove(tarea);
@@ -445,6 +471,7 @@ public class PanelTareas extends JPanel {
         return tarjeta;
     }
 
+    // datitos de la tarea, sin nada visual
     private static class TareaData {
         final String texto;
         final String deadline;

@@ -1,0 +1,48 @@
+CREATE TABLE projects (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVO', -- ACTIVO | PAUSADO | FINALIZADO | CANCELADO
+    due_date DATE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE tasks (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    description TEXT,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE', -- PENDIENTE | EN_PROGRESO | COMPLETADA
+    priority VARCHAR(10) NOT NULL DEFAULT 'MEDIA', -- BAJA | MEDIA | ALTA | URGENTE
+    due_date DATE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    project_id BIGINT REFERENCES projects(id) ON DELETE SET NULL
+);
+
+CREATE TABLE labels (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    color VARCHAR(7)
+);
+
+CREATE TABLE task_label (
+    task_id BIGINT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    label_id BIGINT NOT NULL REFERENCES labels(id) ON DELETE CASCADE,
+    PRIMARY KEY (task_id, label_id)
+);
+
+CREATE TABLE reminders (
+    id BIGSERIAL PRIMARY KEY,
+    task_id BIGINT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    scheduled_at TIMESTAMP NOT NULL,
+    channel VARCHAR(10) NOT NULL, -- WHATSAPP | EMAIL | AMBOS
+    target_phone VARCHAR(20),
+    target_email VARCHAR(100),
+    sent BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE notes (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    content TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);

@@ -1,6 +1,7 @@
 package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
+import com.trullo.exception.DaoException;
 import com.trullo.model.Task;
 import com.trullo.model.TaskPriority;
 import com.trullo.model.TaskStatus;
@@ -21,8 +22,16 @@ public class TaskDAO implements TaskDAOInterface {
             stmt.setString(2, task.getDescription());
             stmt.setString(3, task.getStatus().name());
             stmt.setString(4, task.getPriority().name());
-            stmt.setObject(5, task.getDueDate());
-            stmt.setObject(6, task.getProjectId());
+            if (task.getDueDate() != null) {
+                stmt.setDate(5, Date.valueOf(task.getDueDate()));
+            } else {
+                stmt.setNull(5, Types.DATE);
+            }
+            if (task.getProjectId() != null) {
+                stmt.setLong(6, task.getProjectId());
+            } else {
+                stmt.setNull(6, Types.BIGINT);
+            }
             stmt.executeUpdate();
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -31,7 +40,7 @@ public class TaskDAO implements TaskDAOInterface {
             }
             return task;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al crear tarea", e);
+            throw DaoException.from("Error al crear tarea", e);
         }
     }
 
@@ -44,13 +53,21 @@ public class TaskDAO implements TaskDAOInterface {
             stmt.setString(2, task.getDescription());
             stmt.setString(3, task.getStatus().name());
             stmt.setString(4, task.getPriority().name());
-            stmt.setObject(5, task.getDueDate());
-            stmt.setObject(6, task.getProjectId());
+            if (task.getDueDate() != null) {
+                stmt.setDate(5, Date.valueOf(task.getDueDate()));
+            } else {
+                stmt.setNull(5, Types.DATE);
+            }
+            if (task.getProjectId() != null) {
+                stmt.setLong(6, task.getProjectId());
+            } else {
+                stmt.setNull(6, Types.BIGINT);
+            }
             stmt.setLong(7, task.getId());
             stmt.executeUpdate();
             return task;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al actualizar tarea", e);
+            throw DaoException.from("Error al actualizar tarea", e);
         }
     }
 
@@ -62,7 +79,7 @@ public class TaskDAO implements TaskDAOInterface {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error al eliminar tarea", e);
+            throw DaoException.from("Error al eliminar tarea", e);
         }
     }
 
@@ -78,7 +95,7 @@ public class TaskDAO implements TaskDAOInterface {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar tarea", e);
+            throw DaoException.from("Error al buscar tarea", e);
         }
     }
 
@@ -94,7 +111,7 @@ public class TaskDAO implements TaskDAOInterface {
             }
             return tasks;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al listar tareas", e);
+            throw DaoException.from("Error al listar tareas", e);
         }
     }
 
@@ -111,7 +128,7 @@ public class TaskDAO implements TaskDAOInterface {
             }
             return tasks;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al listar tareas", e);
+            throw DaoException.from("Error al listar tareas", e);
         }
     }
 
@@ -128,7 +145,7 @@ public class TaskDAO implements TaskDAOInterface {
             }
             return tasks;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar tareas por estado", e);
+            throw DaoException.from("Error al buscar tareas por estado", e);
         }
     }
 
@@ -145,7 +162,7 @@ public class TaskDAO implements TaskDAOInterface {
             }
             return tasks;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar tareas por prioridad", e);
+            throw DaoException.from("Error al buscar tareas por prioridad", e);
         }
     }
 
@@ -162,7 +179,7 @@ public class TaskDAO implements TaskDAOInterface {
             }
             return tasks;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar tareas por etiqueta", e);
+            throw DaoException.from("Error al buscar tareas por etiqueta", e);
         }
     }
 

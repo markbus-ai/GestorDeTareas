@@ -8,21 +8,21 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-// panel de notas, aca van las notitas tipo post-its
-// cada nota es una card de color que podes expandir para ver el contenido
-// tiene buscador arriba y boton + abajo
+// panel de notitas tipo post-it: cada una es una card de color que se expande al tocarla
 public class PanelNotas extends JPanel {
 
-        // donde van todas las tarjetitas
+    // donde van las filas de tarjetitas
     private final JPanel listaNotas;
-        // lista con los datos posta, no los paneles
+
+    // los datos posta, separados de lo visual
     private final List<NotaData> notas = new ArrayList<>();
-        // el buscador de arriba
+
+    // el buscador de arriba que filtra al tipear
     private final JTextField campoFiltro;
-        // el titulo Notas
+
     private final JLabel titulo;
 
-        // colores para que no sean todas iguales, va rotando
+    // para que no sean todas iguales, el color va rotando
     private static final Color[] COLORES_NOTA = {
         new Color(62, 85, 105),
         new Color(72, 95, 78),
@@ -31,12 +31,12 @@ public class PanelNotas extends JPanel {
         new Color(68, 85, 98),
     };
 
-        // constructor, armo toda la pantalla
     public PanelNotas() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(36, 48, 36, 48));
         setBackground(ThemeManager.fondo());
 
+        // título de la sección
         titulo = new JLabel("Notas");
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titulo.setForeground(ThemeManager.texto());
@@ -54,6 +54,7 @@ public class PanelNotas extends JPanel {
                 new EmptyBorder(8, 12, 8, 12)));
         campoFiltro.setPreferredSize(new Dimension(0, 36));
 
+        // buscador a lo ancho con aire abajo
         JPanel panelFiltro = new JPanel(new BorderLayout());
         panelFiltro.setOpaque(false);
         panelFiltro.setBorder(BorderFactory.createEmptyBorder(0, 0, 18, 0));
@@ -66,9 +67,12 @@ public class PanelNotas extends JPanel {
         panelSuperior.add(Box.createVerticalStrut(14));
         panelSuperior.add(panelFiltro);
 
-        listaNotas = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 16));
+        // filas verticales de a 3: el FlowLayout solo adentro del scroll no hace wrap y queda todo en una línea
+        listaNotas = new JPanel();
+        listaNotas.setLayout(new BoxLayout(listaNotas, BoxLayout.Y_AXIS));
         listaNotas.setOpaque(false);
 
+        // scroll vertical por si hay muchas filas
         JScrollPane scroll = new JScrollPane(listaNotas);
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
@@ -76,7 +80,7 @@ public class PanelNotas extends JPanel {
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.getVerticalScrollBar().setUI(new ModernScrollBarUI());
 
-        // boton redondo verde con +
+        // botón redondo verde con el +
         JButton botonAgregar = new JButton("+") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -116,7 +120,7 @@ public class PanelNotas extends JPanel {
 
         botonAgregar.addActionListener(e -> mostrarDialogoNuevaNota());
 
-                // filtra al tipear
+        // filtra al tipear, sin botón de buscar
         campoFiltro.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { refrescarLista(); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { refrescarLista(); }
@@ -139,47 +143,50 @@ public class PanelNotas extends JPanel {
         });
     }
 
-        // filtra y redibuja segun buscador
+    // filtra por el buscador y rearma las filas de a 3
     private void refrescarLista() {
         String filtro = campoFiltro.getText().trim().toLowerCase();
         listaNotas.removeAll();
 
-        int anchoPanel = listaNotas.getWidth();
-        if (anchoPanel <= 0) anchoPanel = 800;
-        int columnas = Math.max(2, anchoPanel / 300);
-        int gap = 16;
-        int anchoCard = (anchoPanel - (columnas - 1) * gap) / columnas;
-        anchoCard = Math.min(anchoCard, 300);
-        anchoCard = Math.max(anchoCard, 200);
+        final int columnas = 3;
+        final int anchoCard = 300;
+        final int gap = 16;
 
-        listaNotas.setLayout(new FlowLayout(FlowLayout.LEFT, gap, gap));
-
-        boolean hayAlgo = false;
-        int idx = 0;
+        List<NotaData> visibles = new ArrayList<>();
         for (NotaData nota : notas) {
             boolean mostrar = filtro.isEmpty() ||
                     nota.titulo.toLowerCase().contains(filtro) ||
                     (nota.contenido != null && nota.contenido.toLowerCase().contains(filtro));
-            if (mostrar) {
-                listaNotas.add(crearTarjetaNota(nota, idx, anchoCard));
-                hayAlgo = true;
-                idx++;
-            }
+            if (mostrar) visibles.add(nota);
         }
 
-        if (!hayAlgo) {
-            JLabel vacio = new JLabel("No hay notas", SwingConstants.CENTER);
+        if (visibles.isEmpty()) {
+            JLabel vacio = new JLabel("No hay notas", SwingConstants.LEFT);
             vacio.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             vacio.setForeground(ThemeManager.textoSuave());
-            vacio.setPreferredSize(new Dimension(anchoPanel, 80));
+            vacio.setAlignmentX(Component.LEFT_ALIGNMENT);
             listaNotas.add(vacio);
+        } else {
+            int idx = 0;
+            for (int desde = 0; desde < visibles.size(); desde += columnas) {
+                JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, gap, 8));
+                fila.setOpaque(false);
+                fila.setAlignmentX(Component.LEFT_ALIGNMENT);
+                for (int i = desde; i < Math.min(desde + columnas, visibles.size()); i++) {
+                    fila.add(crearTarjetaNota(visibles.get(i), idx, anchoCard));
+                    idx++;
+                }
+                // tope de alto para que la fila no se estire cuando sobra lugar
+                fila.setMaximumSize(new Dimension(Integer.MAX_VALUE, fila.getPreferredSize().height));
+                listaNotas.add(fila);
+            }
         }
 
         listaNotas.revalidate();
         listaNotas.repaint();
     }
 
-        // crea tarjetita de color con titulo y contenido oculto
+    // armo una tarjetita de color con título visible y contenido que se abre al tocar
     private JPanel crearTarjetaNota(NotaData nota, int indice, int anchoCard) {
         CardState state = new CardState();
         Color colorBase = COLORES_NOTA[indice % COLORES_NOTA.length];
@@ -187,6 +194,7 @@ public class PanelNotas extends JPanel {
 
         int altoFijo = 200;
 
+        // fondo con sombrita abajo y brillo arriba para que no quede plana
         JPanel tarjeta = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -202,16 +210,19 @@ public class PanelNotas extends JPanel {
             }
         };
         tarjeta.setOpaque(false);
+        // layout a mano porque los pibes van en posiciones fijas
         tarjeta.setLayout(null);
         tarjeta.setPreferredSize(new Dimension(anchoCard, altoFijo));
         tarjeta.setMaximumSize(new Dimension(anchoCard, altoFijo));
         tarjeta.setMinimumSize(new Dimension(anchoCard, altoFijo));
 
+        // título siempre visible arriba
         JLabel labelTitulo = new JLabel(nota.titulo, SwingConstants.CENTER);
         labelTitulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
         labelTitulo.setForeground(Color.WHITE);
         labelTitulo.setBounds(18, 14, anchoCard - 70, 24);
 
+        // flechita que apunta para donde se va a expandir
         JLabel labelFlecha = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -233,6 +244,7 @@ public class PanelNotas extends JPanel {
         };
         labelFlecha.setBounds(anchoCard - 60, 14, 20, 20);
 
+        // la x para borrar, dibujada a mano
         JLabel botonBorrar = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -251,6 +263,7 @@ public class PanelNotas extends JPanel {
         botonBorrar.setBounds(anchoCard - 34, 14, 20, 20);
         botonBorrar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
+        // linecita entre el título y el contenido
         JLabel separador = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -262,6 +275,7 @@ public class PanelNotas extends JPanel {
         };
         separador.setBounds(0, 44, anchoCard, 1);
 
+        // el contenido arranca oculto y se muestra al expandir
         JTextArea labelContenido = new JTextArea();
         labelContenido.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         labelContenido.setForeground(new Color(255, 255, 255, 210));
@@ -278,6 +292,7 @@ public class PanelNotas extends JPanel {
         tarjeta.add(separador);
         tarjeta.add(labelContenido);
 
+        // hover: se ilumina un toque
         tarjeta.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
                 colorActual[0] = colorBase.brighter();
@@ -290,11 +305,13 @@ public class PanelNotas extends JPanel {
             }
         });
 
+        // la x se pone rojita en hover
         botonBorrar.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { botonBorrar.setForeground(new Color(255, 90, 90)); }
             public void mouseExited(MouseEvent e) { botonBorrar.setForeground(new Color(255, 255, 255, 140)); }
         });
 
+        // click en la x borra sin expandir, el consume es para que no le llegue a la tarjeta
         botonBorrar.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 e.consume();
@@ -303,6 +320,7 @@ public class PanelNotas extends JPanel {
             }
         });
 
+        // click en la tarjeta expande o colapsa
         tarjeta.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getSource() == botonBorrar) return;
@@ -324,7 +342,7 @@ public class PanelNotas extends JPanel {
         return tarjeta;
     }
 
-        // dialog para crear nota
+    // diálogo para crear una nota con título y contenido
     private void mostrarDialogoNuevaNota() {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Nueva nota", true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -467,16 +485,16 @@ public class PanelNotas extends JPanel {
         dialog.setVisible(true);
     }
 
-        // agrega nota y refresca
+    // agrega la nota y refresca la grilla
     public void agregarNota(String titulo, String contenido) {
         notas.add(new NotaData(titulo, contenido));
         refrescarLista();
     }
 
-        // si la card esta abierta o no
+    // si la card está abierta o no
     private static class CardState { boolean expandida = false; }
 
-        // datos de la nota
+    // datitos de la nota, sin nada visual
     private static class NotaData {
         final String titulo;
         final String contenido;

@@ -11,50 +11,84 @@ import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-// el calendario de toda la vida pero hecho a mano
-// muestra el mes, podes ir para atras/adelante y tocar un dia
-// tambien guarda que dias tienen recordatorios (puntito naranja)
+// el calendario de toda la vida pero hecho a mano: muestra el mes, vas para atrás/adelante y tocás un día
 public class CalendarioMensual extends JPanel {
 
-    // que mes estoy viendo ahora
+    // qué mes estoy viendo ahora
     private YearMonth mesActual = YearMonth.now();
 
-    // que dia tengo seleccionado (arranca hoy)
+    // qué día tengo seleccionado (arranca hoy)
     private LocalDate fechaSeleccionada = LocalDate.now();
 
-    // aca guardo los recordatorios, clave es la fecha y valor la lista de textos
+    // acá guardo los recordatorios, la clave es la fecha y el valor la lista de textos
     private final Map<LocalDate, List<String>> recordatorios = new HashMap<>();
 
-    // labels y paneles que necesito tocar despues
+    // cositos que necesito tocar después (flechas, título, grilla y nombres de días)
     private JLabel labelMesAnio;
     private JPanel panelDias;
+    private JButton flechaAtras;
+    private JButton flechaAdelante;
+    private final List<JLabel> etiquetasDiasSemana = new ArrayList<>();
 
-    // funcion que me avisa cuando tocan una fecha, la setea el panel de recordatorios
+    // la setea el panel de recordatorios para enterarse cuando tocan una fecha
     private Consumer<LocalDate> onFechaSeleccionada;
 
-    // armo todo el calendario
     public CalendarioMensual() {
         setLayout(new BorderLayout());
         setOpaque(false);
 
-        panelDias = new JPanel(); // aca van los numeritos despues
+        // acá van los numeritos después
+        panelDias = new JPanel();
 
-        // contenedor con los nombres de dias arriba y los dias abajo
         JPanel contenedor = new JPanel(new BorderLayout());
         contenedor.setOpaque(false);
         contenedor.add(crearNombresDias(), BorderLayout.NORTH);
         contenedor.add(panelDias, BorderLayout.CENTER);
 
-        add(crearCabecera(), BorderLayout.NORTH); // flechas y mes
+        add(crearCabecera(), BorderLayout.NORTH);
         add(contenedor, BorderLayout.CENTER);
 
-        dibujarDias(); // primera pintada
+        dibujarDias();
 
-        // si cambia el tema repinto
-        ThemeManager.onThemeChange(() -> {
-            repaint();
-            revalidate();
-        });
+        // único listener a nivel de panel: no se registra nada por celda
+        ThemeManager.onThemeChange(this::actualizarTema);
+    }
+
+    private void actualizarTema() {
+        if (flechaAtras != null) {
+            flechaAtras.setForeground(ThemeManager.textoSuave());
+            flechaAtras.setBackground(ThemeManager.tarjeta());
+        }
+        if (flechaAdelante != null) {
+            flechaAdelante.setForeground(ThemeManager.textoSuave());
+            flechaAdelante.setBackground(ThemeManager.tarjeta());
+        }
+        if (labelMesAnio != null) {
+            labelMesAnio.setForeground(ThemeManager.texto());
+        }
+        for (JLabel etiqueta : etiquetasDiasSemana) {
+            etiqueta.setForeground(ThemeManager.textoSuave());
+        }
+        // repinta las celdas visibles sin recrear nada
+        for (Component comp : panelDias.getComponents()) {
+            if (comp instanceof JPanel) {
+                JPanel celda = (JPanel) comp;
+                Object valor = celda.getClientProperty("fecha");
+                if (valor instanceof LocalDate) {
+                    LocalDate fecha = (LocalDate) valor;
+                    for (Component hijo : celda.getComponents()) {
+                        if (hijo instanceof JLabel) {
+                            JLabel numero = (JLabel) hijo;
+                            boolean esHoy = fecha.equals(LocalDate.now());
+                            numero.setForeground(esHoy ? Color.WHITE : ThemeManager.texto());
+                        }
+                    }
+                    celda.repaint();
+                }
+            }
+        }
+        revalidate();
+        repaint();
     }
 
     // para que otro panel se suscriba a cuando tocan una fecha
@@ -68,7 +102,7 @@ public class CalendarioMensual extends JPanel {
         repaint(); // para que se vea el puntito
     }
 
-    // borro un recordatorio
+    // borro un recordatorio de una fecha
     public void borrarRecordatorio(LocalDate fecha, String texto) {
         List<String> lista = recordatorios.get(fecha);
         if (lista != null) {
@@ -77,7 +111,7 @@ public class CalendarioMensual extends JPanel {
         }
     }
 
-    // dame los recordatorios de una fecha, si no hay nada devuelvo lista vacia
+    // dame los de una fecha, si no hay nada devuelvo lista vacía
     public List<String> obtenerRecordatorios(LocalDate fecha) {
         return recordatorios.getOrDefault(fecha, new ArrayList<>());
     }
@@ -88,8 +122,8 @@ public class CalendarioMensual extends JPanel {
         cabecera.setOpaque(false);
         cabecera.setBorder(BorderFactory.createEmptyBorder(0, 0, 18, 0));
 
-        JButton flechaAtras = new JButton("<");
-        JButton flechaAdelante = new JButton(">");
+        flechaAtras = new JButton("<");
+        flechaAdelante = new JButton(">");
 
         // les doy estilo a las dos flechas
         for (JButton flecha : new JButton[]{flechaAtras, flechaAdelante}) {
@@ -99,7 +133,7 @@ public class CalendarioMensual extends JPanel {
             flecha.setFocusPainted(false);
             flecha.setPreferredSize(new Dimension(34, 34));
             flecha.putClientProperty("JButton.buttonType", "roundRect");
-            flecha.putClientProperty("JButton.arc", 999); // bien redonda
+            flecha.putClientProperty("JButton.arc", 999);
             flecha.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         }
 
@@ -115,19 +149,10 @@ public class CalendarioMensual extends JPanel {
         cabecera.add(labelMesAnio, BorderLayout.CENTER);
         cabecera.add(flechaAdelante, BorderLayout.EAST);
 
-        // tema cambia -> actualizo colores
-        ThemeManager.onThemeChange(() -> {
-            for (JButton f : new JButton[]{flechaAtras, flechaAdelante}) {
-                f.setForeground(ThemeManager.textoSuave());
-                f.setBackground(ThemeManager.tarjeta());
-            }
-            labelMesAnio.setForeground(ThemeManager.texto());
-        });
-
         return cabecera;
     }
 
-    // la filita con Lun Mar Mie etc
+    // la filita con Lun Mar Mié etc
     private JPanel crearNombresDias() {
         JPanel fila = new JPanel(new GridLayout(1, 7, 4, 4));
         fila.setOpaque(false);
@@ -135,19 +160,22 @@ public class CalendarioMensual extends JPanel {
 
         String[] dias = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
 
+        etiquetasDiasSemana.clear();
         for (String dia : dias) {
             JLabel label = new JLabel(dia, SwingConstants.CENTER);
             label.setFont(new Font("Segoe UI", Font.BOLD, 11));
             label.setForeground(ThemeManager.textoSuave());
+            etiquetasDiasSemana.add(label);
             fila.add(label);
         }
 
         return fila;
     }
 
-    // aca dibujo todos los dias del mes, la parte mas jodida
+    // acá dibujo todos los días del mes, la parte más jodida
     private void dibujarDias() {
-        // nombre del mes en español con mayuscula
+
+        // nombre del mes en español con mayúscula
         String nombreMes = mesActual.getMonth().getDisplayName(TextStyle.FULL, new Locale("es", "ES"));
         nombreMes = nombreMes.substring(0, 1).toUpperCase() + nombreMes.substring(1);
         labelMesAnio.setText(nombreMes + " " + mesActual.getYear());
@@ -156,22 +184,22 @@ public class CalendarioMensual extends JPanel {
         panelDias.setLayout(new GridLayout(0, 7, 4, 8));
         panelDias.setOpaque(false);
 
-        // si el mes no empieza lunes tengo que dejar huecos vacios
         LocalDate primerDiaDelMes = mesActual.atDay(1);
+        // placeholders vacíos para alinear el día 1 con su columna (Lun-Dom)
         int huecosAntes = primerDiaDelMes.getDayOfWeek().getValue() - 1;
 
         for (int i = 0; i < huecosAntes; i++) {
             panelDias.add(crearCeldaVacia());
         }
 
-        // ahora si, cada dia del mes
+        // ahora sí, cada día del mes
         for (int dia = 1; dia <= mesActual.lengthOfMonth(); dia++) {
             LocalDate fecha = mesActual.atDay(dia);
             panelDias.add(crearCeldaDia(fecha));
         }
     }
 
-    // celdita vacia para los huecos del principio
+    // celdita vacía para los huecos del principio
     private JPanel crearCeldaVacia() {
         JPanel celda = new JPanel();
         celda.setOpaque(false);
@@ -179,7 +207,7 @@ public class CalendarioMensual extends JPanel {
         return celda;
     }
 
-    // cada numerito del calendario, con su circulo si es hoy/seleccionado y puntito si tiene recordatorio
+    // cada numerito del calendario, con su círculo si es hoy/seleccionado y puntito si tiene recordatorio
     private JPanel crearCeldaDia(LocalDate fecha) {
         JPanel celda = new JPanel(new GridBagLayout()) {
             @Override
@@ -188,13 +216,13 @@ public class CalendarioMensual extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+                // hoy va azul fuerte, seleccionado pero no hoy va azul clarito
                 boolean esHoy = fecha.equals(LocalDate.now());
                 boolean esSeleccionado = fecha.equals(fechaSeleccionada);
                 int diametro = 36;
                 int x = (getWidth() - diametro) / 2;
                 int y = (getHeight() - diametro) / 2;
 
-                // si es hoy va azul fuerte, si es seleccionado pero no hoy va azul clarito
                 if (esHoy) {
                     g2.setColor(ThemeManager.AZUL);
                     g2.fillOval(x, y, diametro, diametro);
@@ -216,6 +244,8 @@ public class CalendarioMensual extends JPanel {
         celda.setOpaque(false);
         celda.setPreferredSize(new Dimension(56, 56));
         celda.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        // guardo la fecha en la celda para poder repintarla en cambio de tema sin recrear nada
+        celda.putClientProperty("fecha", fecha);
 
         boolean esHoy = fecha.equals(LocalDate.now());
         JLabel numero = new JLabel(String.valueOf(fecha.getDayOfMonth()));
@@ -223,14 +253,7 @@ public class CalendarioMensual extends JPanel {
         numero.setForeground(esHoy ? Color.WHITE : ThemeManager.texto());
         celda.add(numero);
 
-        // actualizo color si cambia tema
-        ThemeManager.onThemeChange(() -> {
-            boolean ahoraHoy = fecha.equals(LocalDate.now());
-            numero.setForeground(ahoraHoy ? Color.WHITE : ThemeManager.texto());
-            celda.repaint();
-        });
-
-        // click en el dia
+        // click en el día
         celda.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

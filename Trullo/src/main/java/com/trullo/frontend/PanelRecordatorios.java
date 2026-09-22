@@ -8,22 +8,22 @@ import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.util.List;
 
-// panel de la derecha del calendario donde se ven/agregan recordatorios del dia seleccionado
+// panel de la derecha del calendario: ves y agregás recordatorios del día seleccionado
 public class PanelRecordatorios extends JPanel {
 
-    // necesito el calendario para leer/escribir recordatorios
+    // lo necesito para leer y escribir los recordatorios
     private final CalendarioMensual calendario;
 
-    // label de la fecha arriba
+    // la fecha de arriba tipo 16/9/2026
     private final JLabel labelFecha;
 
-    // donde van las tarjetitas de recordatorios
+    // columna vertical con las tarjetitas
     private final JPanel listaContenedor;
 
     // input para escribir uno nuevo
     private final JTextField campoTexto;
 
-    // que fecha estoy mirando ahora
+    // qué fecha estoy mirando ahora
     private LocalDate fechaActualSeleccionada;
 
     public PanelRecordatorios(CalendarioMensual calendario) {
@@ -40,7 +40,7 @@ public class PanelRecordatorios extends JPanel {
         labelFecha.setForeground(ThemeManager.texto());
         labelFecha.setBorder(BorderFactory.createEmptyBorder(0, 4, 16, 0));
 
-        // contenedor vertical para las tarjetas
+        // columna vertical para las tarjetas
         listaContenedor = new JPanel();
         listaContenedor.setLayout(new BoxLayout(listaContenedor, BoxLayout.Y_AXIS));
         listaContenedor.setOpaque(false);
@@ -54,7 +54,7 @@ public class PanelRecordatorios extends JPanel {
         scrollLista.getVerticalScrollBar().setUI(new ModernScrollBarUI());
         scrollLista.setPreferredSize(new Dimension(340, 300));
 
-        // campo para escribir
+        // campo para escribir el texto
         campoTexto = new JTextField();
         campoTexto.putClientProperty("JTextField.placeholderText", "Escribí un recordatorio...");
         campoTexto.putClientProperty("JComponent.arc", 12);
@@ -67,7 +67,7 @@ public class PanelRecordatorios extends JPanel {
                 new EmptyBorder(8, 12, 8, 12)));
         campoTexto.setPreferredSize(new Dimension(0, 38));
 
-        // boton naranja para agregar
+        // botón naranja para agregar
         JButton botonAgregar = new JButton("+ Agregar");
         botonAgregar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         botonAgregar.setFocusPainted(false);
@@ -78,7 +78,7 @@ public class PanelRecordatorios extends JPanel {
         botonAgregar.setForeground(Color.WHITE);
         botonAgregar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // input + boton abajo
+        // input arriba y botón abajo
         JPanel panelInferior = new JPanel(new BorderLayout(0, 10));
         panelInferior.setOpaque(false);
         panelInferior.setBorder(BorderFactory.createEmptyBorder(14, 0, 0, 0));
@@ -89,23 +89,23 @@ public class PanelRecordatorios extends JPanel {
         add(scrollLista, BorderLayout.CENTER);
         add(panelInferior, BorderLayout.SOUTH);
 
-        // cuando tocan un dia en el calendario, me aviso y actualizo
+        // cuando tocan un día en el calendario me avisa y actualizo
         calendario.setOnFechaSeleccionada(fecha -> {
             fechaActualSeleccionada = fecha;
             actualizarPanel();
         });
 
-        // click en agregar
+        // click en agregar: guarda, limpia y refresca
         botonAgregar.addActionListener(e -> {
             String texto = campoTexto.getText().trim();
             if (!texto.isEmpty()) {
                 calendario.agregarRecordatorio(fechaActualSeleccionada, texto);
-                campoTexto.setText(""); // limpio
+                campoTexto.setText(""); // limpio para el próximo
                 actualizarPanel();
             }
         });
 
-        // tema cambia -> repinto todo
+        // si cambia el tema repinto todo
         ThemeManager.onThemeChange(() -> {
             labelFecha.setForeground(ThemeManager.texto());
             campoTexto.setBackground(ThemeManager.input());
@@ -123,9 +123,9 @@ public class PanelRecordatorios extends JPanel {
         actualizarPanel(); // primera carga
     }
 
-    // refresca fecha y lista
+    // refresca la fecha de arriba y la lista de tarjetas
     private void actualizarPanel() {
-        // muestro la fecha tipo 11/9/2026
+
         labelFecha.setText("Recordatorios \u00B7 " + fechaActualSeleccionada.getDayOfMonth() +
                 "/" + fechaActualSeleccionada.getMonthValue() + "/" + fechaActualSeleccionada.getYear());
 
@@ -134,6 +134,7 @@ public class PanelRecordatorios extends JPanel {
         List<String> textos = calendario.obtenerRecordatorios(fechaActualSeleccionada);
 
         if (textos.isEmpty()) {
+            // si no hay nada aviso en vez de dejarlo vacío
             JLabel vacio = new JLabel("No hay recordatorios");
             vacio.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             vacio.setForeground(ThemeManager.textoSuave());
@@ -146,7 +147,7 @@ public class PanelRecordatorios extends JPanel {
                     actualizarPanel();
                 });
                 listaContenedor.add(tarjeta);
-                listaContenedor.add(Box.createVerticalStrut(6)); // separacion entre tarjetas
+                listaContenedor.add(Box.createVerticalStrut(6)); // aire entre tarjetas
             }
         }
 
@@ -167,7 +168,7 @@ public class PanelRecordatorios extends JPanel {
         tarjeta.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         tarjeta.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // puntito naranja a la izquierda
+        // puntito naranja dibujado a mano
         JLabel punto = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -191,7 +192,7 @@ public class PanelRecordatorios extends JPanel {
         izquierda.add(punto, BorderLayout.WEST);
         izquierda.add(label, BorderLayout.CENTER);
 
-        // x para borrar, pintada a mano
+        // la x para borrar, pintada a mano para que quede centrada
         JLabel botonBorrar = new JLabel("x") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -211,7 +212,7 @@ public class PanelRecordatorios extends JPanel {
         botonBorrar.setPreferredSize(new Dimension(24, 24));
         botonBorrar.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // hover se pone rosa
+        // en hover se pone rosa para avisar que borra
         botonBorrar.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { botonBorrar.setForeground(ThemeManager.ROSA); }
             public void mouseExited(MouseEvent e) { botonBorrar.setForeground(ThemeManager.textoSuave()); }

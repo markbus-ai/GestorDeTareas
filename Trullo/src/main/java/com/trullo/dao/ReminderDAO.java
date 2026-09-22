@@ -138,6 +138,6 @@ public class ReminderDAO implements ReminderDAOInterface {
         String targetPhone = rs.getString("target_phone");
         String targetEmail = rs.getString("target_email");
         boolean sent = rs.getBoolean("sent");
-        return new Reminder(id, taskId, scheduledAt, channel, targetPhone, targetEmail);
+        return new Reminder(id, taskId, scheduledAt, channel, targetPhone, targetEmail, sent);
     }
 }

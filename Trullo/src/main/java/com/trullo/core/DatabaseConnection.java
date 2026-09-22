@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
     private static final DatabaseConnection INSTANCE = new DatabaseConnection();
-    private final HikariDataSource dataSource;
+    private volatile HikariDataSource dataSource;
     private static final Dotenv dotenv = Dotenv.load();
 
     private static final int POOL_MIN = 2;
@@ -19,6 +19,11 @@ public class DatabaseConnection {
     private static final long MAX_LIFETIME = 1800000;
 
     private DatabaseConnection() {
+        this.dataSource = createDataSource();
+        Runtime.getRuntime().addShutdownHook(new Thread(this::close, "db-shutdown"));
+    }
+
+    private static HikariDataSource createDataSource() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:postgresql://" +
                 dotenv.get("DB_HOST") + ":" +
@@ -31,8 +36,7 @@ public class DatabaseConnection {
         config.setConnectionTimeout(CONNECTION_TIMEOUT);
         config.setIdleTimeout(IDLE_TIMEOUT);
         config.setMaxLifetime(MAX_LIFETIME);
-
-        this.dataSource = new HikariDataSource(config);
+        return new HikariDataSource(config);
     }
 
     public static DatabaseConnection getInstance() {
@@ -40,12 +44,26 @@ public class DatabaseConnection {
     }
 
     public Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+        HikariDataSource ds = dataSource;
+        if (ds == null || ds.isClosed()) {
+            synchronized (this) {
+                ds = dataSource;
+                if (ds == null || ds.isClosed()) {
+                    ds = createDataSource();
+                    dataSource = ds;
+                }
+            }
+        }
+        return ds.getConnection();
     }
 
     public void close() {
-        if (dataSource != null && !dataSource.isClosed()) {
-            dataSource.close();
+        synchronized (this) {
+            HikariDataSource ds = dataSource;
+            if (ds != null && !ds.isClosed()) {
+                ds.close();
+            }
+            dataSource = null;
         }
     }
 }

@@ -56,10 +56,10 @@ public class ProyectoController implements CrudValidator {
         if (requireId) {
             validateId(proyecto.getId());
         }
-        requireText(proyecto.getNombre(), "nombre");
-        requireNonNull(proyecto.getEstado(), "estado");
-        if (proyecto.getFechaLimite() != null) {
-            validateFechaLimite(proyecto.getFechaLimite());
+        requireText(proyecto.getName(), "nombre");
+        requireNonNull(proyecto.getStatus(), "estado");
+        if (proyecto.getDueDate() != null) {
+            validateFechaLimite(proyecto.getDueDate());
         }
     }
 

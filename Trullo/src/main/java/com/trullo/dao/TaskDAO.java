@@ -202,7 +202,7 @@ public class TaskDAO implements TaskDAOInterface {
 
     @Override
     public List<Task> findDueToday(int days) {
-        String sql = "SELECT * FROM tasks WHERE due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL ? DAY AND status != 'COMPLETED'";
+        String sql = "SELECT * FROM tasks WHERE due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + ? * INTERVAL '1 DAY' AND status != 'COMPLETED'";
         List<Task> tasks = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

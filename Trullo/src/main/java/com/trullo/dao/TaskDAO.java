@@ -186,7 +186,7 @@ public class TaskDAO implements TaskDAOInterface {
 
     @Override
     public List<Task> findOverdue() {
-        String sql = "SELECT * FROM tasks WHERE due_date < CURRENT_DATE AND status != 'COMPLETED'";
+        String sql = "SELECT * FROM tasks WHERE due_date < CURRENT_DATE AND status != 'COMPLETADA'";
         List<Task> tasks = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              Statement stmt = conn.createStatement();

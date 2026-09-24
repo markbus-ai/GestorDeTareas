@@ -13,14 +13,14 @@ public class Reminder {
     private boolean sent;
 
     public Reminder(Long id, Long taskId, LocalDateTime scheduledAt,
-                    NotificationChannel channel, String targetPhone, String targetEmail) {
+                    NotificationChannel channel, String targetPhone, String targetEmail, boolean sent) {
         this.id = id;
         this.taskId = taskId;
         this.scheduledAt = scheduledAt;
         this.channel = channel;
         this.targetPhone = targetPhone;
         this.targetEmail = targetEmail;
-        this.sent = false;
+        this.sent = sent;
     }
 
     public Long getId() {

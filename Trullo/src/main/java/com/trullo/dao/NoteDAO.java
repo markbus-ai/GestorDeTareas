@@ -18,9 +18,10 @@ public class NoteDAO implements NoteDAOInterface {
             stmt.setString(2, note.getContent());
             stmt.executeUpdate();
 
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                note.setId(rs.getLong(1));
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    note.setId(rs.getLong(1));
+                }
             }
             return note;
         } catch (SQLException e) {

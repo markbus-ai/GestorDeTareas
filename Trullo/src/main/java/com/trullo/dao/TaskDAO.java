@@ -34,9 +34,10 @@ public class TaskDAO implements TaskDAOInterface {
             }
             stmt.executeUpdate();
 
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                task.setId(rs.getLong(1));
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    task.setId(rs.getLong(1));
+                }
             }
             return task;
         } catch (SQLException e) {

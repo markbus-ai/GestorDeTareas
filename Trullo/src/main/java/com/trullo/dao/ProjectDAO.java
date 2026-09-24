@@ -22,9 +22,10 @@ public class ProjectDAO implements ProjectDAOInterface {
             stmt.setObject(4, proyecto.getDueDate());
             stmt.executeUpdate();
 
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                proyecto.setId(rs.getLong(1));
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    proyecto.setId(rs.getLong(1));
+                }
             }
             return proyecto;
         } catch (SQLException e) {

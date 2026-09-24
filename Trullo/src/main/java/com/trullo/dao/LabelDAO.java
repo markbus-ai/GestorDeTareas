@@ -18,9 +18,10 @@ public class LabelDAO implements LabelDAOInterface {
             stmt.setString(2, label.getColor());
             stmt.executeUpdate();
 
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                label.setId(rs.getLong(1));
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    label.setId(rs.getLong(1));
+                }
             }
             return label;
         } catch (SQLException e) {

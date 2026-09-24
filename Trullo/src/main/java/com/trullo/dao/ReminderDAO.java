@@ -24,9 +24,10 @@ public class ReminderDAO implements ReminderDAOInterface {
             stmt.setBoolean(6, reminder.isSent());
             stmt.executeUpdate();
 
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                reminder.setId(rs.getLong(1));
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    reminder.setId(rs.getLong(1));
+                }
             }
             return reminder;
         } catch (SQLException e) {

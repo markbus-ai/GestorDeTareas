@@ -16,10 +16,10 @@ public class ProjectDAO implements ProjectDAOInterface {
         String sql = "INSERT INTO projects (name, description, status, due_date) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, proyecto.getNombre());
-            stmt.setString(2, proyecto.getDescripcion());
-            stmt.setString(3, proyecto.getEstado().name());
-            stmt.setObject(4, proyecto.getFechaLimite());
+            stmt.setString(1, proyecto.getName());
+            stmt.setString(2, proyecto.getDescription());
+            stmt.setString(3, proyecto.getStatus().name());
+            stmt.setObject(4, proyecto.getDueDate());
             stmt.executeUpdate();
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -37,10 +37,10 @@ public class ProjectDAO implements ProjectDAOInterface {
         String sql = "UPDATE projects SET name = ?, description = ?, status = ?, due_date = ? WHERE id = ?";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, proyecto.getNombre());
-            stmt.setString(2, proyecto.getDescripcion());
-            stmt.setString(3, proyecto.getEstado().name());
-            stmt.setObject(4, proyecto.getFechaLimite());
+            stmt.setString(1, proyecto.getName());
+            stmt.setString(2, proyecto.getDescription());
+            stmt.setString(3, proyecto.getStatus().name());
+            stmt.setObject(4, proyecto.getDueDate());
             stmt.setLong(5, proyecto.getId());
             stmt.executeUpdate();
             return proyecto;

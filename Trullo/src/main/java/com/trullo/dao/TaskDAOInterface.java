@@ -10,4 +10,6 @@ public interface TaskDAOInterface extends BaseDAOInterface<Task> {
     List<Task> findByStatus(TaskStatus status);
     List<Task> findByPriority(TaskPriority priority);
     List<Task> findByLabelId(Long labelId);
+    List<Task> findOverdue();
+    List<Task> findDueToday(int days);
 }

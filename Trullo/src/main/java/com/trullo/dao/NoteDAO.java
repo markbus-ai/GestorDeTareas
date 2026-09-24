@@ -4,7 +4,6 @@ import com.trullo.core.DatabaseConnection;
 import com.trullo.model.Note;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

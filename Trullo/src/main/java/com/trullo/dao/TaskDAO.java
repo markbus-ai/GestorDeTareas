@@ -183,6 +183,39 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    @Override
+    public List<Task> findOverdue() {
+        String sql = "SELECT * FROM tasks WHERE due_date < CURRENT_DATE AND status != 'COMPLETED'";
+        List<Task> tasks = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                tasks.add(mapRow(rs));
+            }
+            return tasks;
+        } catch (SQLException e) {
+            throw DaoException.from("Error al buscar tareas vencidas", e);
+        }
+    }
+
+    @Override
+    public List<Task> findDueToday(int days) {
+        String sql = "SELECT * FROM tasks WHERE due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL ? DAY AND status != 'COMPLETED'";
+        List<Task> tasks = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, days);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                tasks.add(mapRow(rs));      
+            }
+            return tasks;
+        } catch (SQLException e) {
+            throw DaoException.from("Error al buscar tareas para hoy", e);
+        }
+    }
+
     private Task mapRow(ResultSet rs) throws SQLException {
         Long id = rs.getLong("id");
         String title = rs.getString("title");

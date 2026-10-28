@@ -3,6 +3,7 @@ package com.trullo.dao;
 import com.trullo.core.DatabaseConnection;
 import com.trullo.model.NotificationChannel;
 import com.trullo.model.Reminder;
+import com.trullo.interfaces.dao.ReminderDAOInterface;
 
 import java.sql.*;
 import java.time.LocalDateTime;

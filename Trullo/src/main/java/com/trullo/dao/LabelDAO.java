@@ -1,6 +1,7 @@
 package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
+import com.trullo.interfaces.dao.LabelDAOInterface;
 import com.trullo.model.Label;
 
 import java.sql.*;

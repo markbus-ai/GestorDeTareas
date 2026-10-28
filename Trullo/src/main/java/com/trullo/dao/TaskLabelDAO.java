@@ -2,6 +2,7 @@ package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
 import com.trullo.model.Label;
+import com.trullo.interfaces.dao.TaskLabelDAOInterface;
 
 import java.sql.*;
 import java.util.ArrayList;

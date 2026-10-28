@@ -1,4 +1,4 @@
-package com.trullo.dao;
+package com.trullo.interfaces;
 
 import java.util.List;
 

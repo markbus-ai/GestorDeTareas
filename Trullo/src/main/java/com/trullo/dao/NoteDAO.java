@@ -2,6 +2,7 @@ package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
 import com.trullo.model.Note;
+import com.trullo.interfaces.dao.NoteDAOInterface;
 
 import java.sql.*;
 import java.util.ArrayList;

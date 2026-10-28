@@ -1,4 +1,4 @@
-package com.trullo.service;
+package com.trullo.interfaces.services;
 
 import com.trullo.model.EstadoProyecto;
 import com.trullo.model.Proyecto;

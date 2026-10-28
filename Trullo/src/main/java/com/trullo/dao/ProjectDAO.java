@@ -3,6 +3,7 @@ package com.trullo.dao;
 import com.trullo.core.DatabaseConnection;
 import com.trullo.model.EstadoProyecto;
 import com.trullo.model.Proyecto;
+import com.trullo.interfaces.dao.ProjectDAOInterface;
 
 import java.sql.*;
 import java.time.LocalDate;

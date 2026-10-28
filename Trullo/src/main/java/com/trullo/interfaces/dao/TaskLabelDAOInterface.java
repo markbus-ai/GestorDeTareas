@@ -1,4 +1,4 @@
-package com.trullo.dao;
+package com.trullo.interfaces.dao;
 
 import com.trullo.model.Label;
 import java.util.List;

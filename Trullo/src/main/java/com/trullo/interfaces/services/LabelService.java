@@ -1,4 +1,4 @@
-package com.trullo.service;
+package com.trullo.interfaces.services;
 
 import com.trullo.model.Label;
 import java.util.List;

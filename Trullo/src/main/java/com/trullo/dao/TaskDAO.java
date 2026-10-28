@@ -5,6 +5,7 @@ import com.trullo.exception.DaoException;
 import com.trullo.model.Task;
 import com.trullo.model.TaskPriority;
 import com.trullo.model.TaskStatus;
+import com.trullo.interfaces.dao.TaskDAOInterface;
 
 import java.sql.*;
 import java.time.LocalDate;

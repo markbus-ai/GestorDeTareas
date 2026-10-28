@@ -1,7 +1,8 @@
 package com.trullo.controller;
 
+import com.trullo.interfaces.services.NoteService;
 import com.trullo.model.Note;
-import com.trullo.service.NoteService;
+
 import java.util.List;
 
 public class NoteController implements CrudValidator {

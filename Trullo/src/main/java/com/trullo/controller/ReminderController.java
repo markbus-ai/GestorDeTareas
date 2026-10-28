@@ -1,9 +1,9 @@
 package com.trullo.controller;
 
-import com.trullo.exception.ValidationException;
+import com.trullo.interfaces.services.ReminderService;
 import com.trullo.model.NotificationChannel;
 import com.trullo.model.Reminder;
-import com.trullo.service.ReminderService;
+
 import java.util.List;
 
 public class ReminderController implements CrudValidator {

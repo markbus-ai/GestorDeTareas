@@ -1,9 +1,10 @@
 package com.trullo.controller;
 
 import com.trullo.exception.ValidationException;
+import com.trullo.interfaces.services.ProyectoService;
 import com.trullo.model.EstadoProyecto;
 import com.trullo.model.Proyecto;
-import com.trullo.service.ProyectoService;
+
 import java.time.LocalDate;
 import java.util.List;
 

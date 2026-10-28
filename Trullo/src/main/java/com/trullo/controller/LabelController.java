@@ -1,7 +1,8 @@
 package com.trullo.controller;
 
+import com.trullo.interfaces.services.LabelService;
 import com.trullo.model.Label;
-import com.trullo.service.LabelService;
+
 import java.util.List;
 
 public class LabelController implements CrudValidator {

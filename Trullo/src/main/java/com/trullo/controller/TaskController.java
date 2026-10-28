@@ -1,10 +1,11 @@
 package com.trullo.controller;
 
 import com.trullo.exception.ValidationException;
+import com.trullo.interfaces.services.TaskService;
 import com.trullo.model.Task;
 import com.trullo.model.TaskPriority;
 import com.trullo.model.TaskStatus;
-import com.trullo.service.TaskService;
+
 import java.time.LocalDate;
 import java.util.List;
 

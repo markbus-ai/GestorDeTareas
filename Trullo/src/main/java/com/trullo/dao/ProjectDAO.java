@@ -1,6 +1,7 @@
 package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
+import com.trullo.exception.DaoException;
 import com.trullo.model.EstadoProyecto;
 import com.trullo.model.Proyecto;
 import com.trullo.interfaces.dao.ProjectDAOInterface;
@@ -30,7 +31,7 @@ public class ProjectDAO implements ProjectDAOInterface {
             }
             return proyecto;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al crear proyecto", e);
+            throw DaoException.from("Error al crear proyecto", e);
         }
     }
 
@@ -47,7 +48,7 @@ public class ProjectDAO implements ProjectDAOInterface {
             stmt.executeUpdate();
             return proyecto;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al actualizar proyecto", e);
+            throw DaoException.from("Error al actualizar proyecto", e);
         }
     }
 
@@ -59,7 +60,7 @@ public class ProjectDAO implements ProjectDAOInterface {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error al eliminar proyecto", e);
+            throw DaoException.from("Error al eliminar proyecto", e);
         }
     }
 
@@ -75,7 +76,7 @@ public class ProjectDAO implements ProjectDAOInterface {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar proyecto", e);
+            throw DaoException.from("Error al buscar proyecto", e);
         }
     }
 
@@ -91,7 +92,7 @@ public class ProjectDAO implements ProjectDAOInterface {
             }
             return proyectos;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al listar proyectos", e);
+            throw DaoException.from("Error al listar proyectos", e);
         }
     }
 

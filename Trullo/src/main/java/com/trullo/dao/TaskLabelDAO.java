@@ -1,6 +1,7 @@
 package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
+import com.trullo.exception.DaoException;
 import com.trullo.model.Label;
 import com.trullo.interfaces.dao.TaskLabelDAOInterface;
 
@@ -19,7 +20,7 @@ public class TaskLabelDAO implements TaskLabelDAOInterface {
             stmt.setLong(2, labelId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error al agregar etiqueta a tarea", e);
+            throw DaoException.from("Error al agregar etiqueta a tarea", e);
         }
     }
 
@@ -32,7 +33,7 @@ public class TaskLabelDAO implements TaskLabelDAOInterface {
             stmt.setLong(2, labelId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error al quitar etiqueta de tarea", e);
+            throw DaoException.from("Error al quitar etiqueta de tarea", e);
         }
     }
 
@@ -52,7 +53,7 @@ public class TaskLabelDAO implements TaskLabelDAOInterface {
             }
             return labels;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar etiquetas por tarea", e);
+            throw DaoException.from("Error al buscar etiquetas por tarea", e);
         }
     }
 }

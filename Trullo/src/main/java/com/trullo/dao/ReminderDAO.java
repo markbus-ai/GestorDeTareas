@@ -1,6 +1,7 @@
 package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
+import com.trullo.exception.DaoException;
 import com.trullo.model.NotificationChannel;
 import com.trullo.model.Reminder;
 import com.trullo.interfaces.dao.ReminderDAOInterface;
@@ -32,7 +33,7 @@ public class ReminderDAO implements ReminderDAOInterface {
             }
             return reminder;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al crear recordatorio", e);
+            throw DaoException.from("Error al crear recordatorio", e);
         }
     }
 
@@ -51,7 +52,7 @@ public class ReminderDAO implements ReminderDAOInterface {
             stmt.executeUpdate();
             return reminder;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al actualizar recordatorio", e);
+            throw DaoException.from("Error al actualizar recordatorio", e);
         }
     }
 
@@ -63,7 +64,7 @@ public class ReminderDAO implements ReminderDAOInterface {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error al eliminar recordatorio", e);
+            throw DaoException.from("Error al eliminar recordatorio", e);
         }
     }
 
@@ -79,7 +80,7 @@ public class ReminderDAO implements ReminderDAOInterface {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar recordatorio", e);
+            throw DaoException.from("Error al buscar recordatorio", e);
         }
     }
 
@@ -95,7 +96,7 @@ public class ReminderDAO implements ReminderDAOInterface {
             }
             return reminders;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al listar recordatorios", e);
+            throw DaoException.from("Error al listar recordatorios", e);
         }
     }
 
@@ -112,7 +113,7 @@ public class ReminderDAO implements ReminderDAOInterface {
             }
             return reminders;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar recordatorios por tarea", e);
+            throw DaoException.from("Error al buscar recordatorios por tarea", e);
         }
     }
 
@@ -128,7 +129,7 @@ public class ReminderDAO implements ReminderDAOInterface {
             }
             return reminders;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar recordatorios pendientes", e);
+            throw DaoException.from("Error al buscar recordatorios pendientes", e);
         }
     }
 

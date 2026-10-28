@@ -1,6 +1,7 @@
 package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
+import com.trullo.exception.DaoException;
 import com.trullo.model.Note;
 import com.trullo.interfaces.dao.NoteDAOInterface;
 
@@ -26,7 +27,7 @@ public class NoteDAO implements NoteDAOInterface {
             }
             return note;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al crear nota", e);
+            throw DaoException.from("Error al crear nota", e);
         }
     }
 
@@ -41,7 +42,7 @@ public class NoteDAO implements NoteDAOInterface {
             stmt.executeUpdate();
             return note;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al actualizar nota", e);
+            throw DaoException.from("Error al actualizar nota", e);
         }
     }
 
@@ -53,7 +54,7 @@ public class NoteDAO implements NoteDAOInterface {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error al eliminar nota", e);
+            throw DaoException.from("Error al eliminar nota", e);
         }
     }
 
@@ -69,7 +70,7 @@ public class NoteDAO implements NoteDAOInterface {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar nota", e);
+            throw DaoException.from("Error al buscar nota", e);
         }
     }
 
@@ -85,7 +86,7 @@ public class NoteDAO implements NoteDAOInterface {
             }
             return notes;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al listar notas", e);
+            throw DaoException.from("Error al listar notas", e);
         }
     }
 

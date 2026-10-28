@@ -1,6 +1,7 @@
 package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
+import com.trullo.exception.DaoException;
 import com.trullo.interfaces.dao.LabelDAOInterface;
 import com.trullo.model.Label;
 
@@ -26,7 +27,7 @@ public class LabelDAO implements LabelDAOInterface {
             }
             return label;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al crear etiqueta", e);
+            throw DaoException.from("Error al crear etiqueta", e);
         }
     }
 
@@ -41,7 +42,7 @@ public class LabelDAO implements LabelDAOInterface {
             stmt.executeUpdate();
             return label;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al actualizar etiqueta", e);
+            throw DaoException.from("Error al actualizar etiqueta", e);
         }
     }
 
@@ -53,7 +54,7 @@ public class LabelDAO implements LabelDAOInterface {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error al eliminar etiqueta", e);
+            throw DaoException.from("Error al eliminar etiqueta", e);
         }
     }
 
@@ -69,7 +70,7 @@ public class LabelDAO implements LabelDAOInterface {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar etiqueta", e);
+            throw DaoException.from("Error al buscar etiqueta", e);
         }
     }
 
@@ -85,7 +86,7 @@ public class LabelDAO implements LabelDAOInterface {
             }
             return labels;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al listar etiquetas", e);
+            throw DaoException.from("Error al listar etiquetas", e);
         }
     }
 
@@ -102,7 +103,7 @@ public class LabelDAO implements LabelDAOInterface {
             }
             return labels;
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar etiquetas por tarea", e);
+            throw DaoException.from("Error al buscar etiquetas por tarea", e);
         }
     }
 

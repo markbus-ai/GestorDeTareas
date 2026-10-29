@@ -14,8 +14,14 @@ public interface ReminderDAOInterface extends BaseInterface<Reminder> {
      * Operacion para buscar recordatorios mediante una tarea
      * 
      * @param taskId identificador de la tarea 
-     * @return Develve
+     * @return Devuelve una lista de Recordatorios; en caso de no haber devulve la lista vacia
      */
     List<Reminder> findByTaskId(Long taskId);
+
+    /**
+     * Operacion para buscar Recordatorios pendientes
+     * 
+     * @return Devuelve una lista de Recordatorios; en caso de no haber devulve la lista vacia
+     */
     List<Reminder> findPending();
 }

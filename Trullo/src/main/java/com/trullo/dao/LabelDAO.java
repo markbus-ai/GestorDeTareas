@@ -9,6 +9,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO encargado de gestionar el acceso a datos de las etiquetas de tareas.
+ * <p>
+ * Implementa las operaciones CRUD definidas en {@link BaseDAOInterface}
+ * y permite consultar las etiquetas asociadas a una tarea específica.
+ *
+ * @author Nahuel Romero
+ */
 public class LabelDAO implements LabelDAOInterface {
 
     @Override

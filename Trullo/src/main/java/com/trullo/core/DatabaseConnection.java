@@ -8,9 +8,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static final DatabaseConnection INSTANCE = new DatabaseConnection();
     private volatile HikariDataSource dataSource;
     private static final Dotenv dotenv = Dotenv.load();
+    private static final DatabaseConnection INSTANCE = new DatabaseConnection();
 
     private static final int POOL_MIN = 2;
     private static final int POOL_MAX = 10;

@@ -1,3 +1,5 @@
+create database truello;
+
 CREATE TABLE projects (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,

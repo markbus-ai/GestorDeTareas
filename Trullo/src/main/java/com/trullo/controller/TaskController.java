@@ -1,5 +1,6 @@
 package com.trullo.controller;
 
+import com.trullo.interfaces.BaseInterface;
 import com.trullo.exception.ValidationException;
 import com.trullo.interfaces.services.TaskService;
 import com.trullo.model.Task;
@@ -9,7 +10,7 @@ import com.trullo.model.TaskStatus;
 import java.time.LocalDate;
 import java.util.List;
 
-public class TaskController implements CrudValidator {
+public class TaskController implements CrudValidator, BaseInterface<Task> {
     private final TaskService taskService;
 
     public TaskController(TaskService taskService) {
@@ -17,27 +18,32 @@ public class TaskController implements CrudValidator {
         this.taskService = taskService;
     }
 
-    public Task crear(Task task) {
+    @Override
+    public Task create(Task task) {
         validateTask(task, false);
         return taskService.crear(task);
     }
 
-    public Task modificar(Task task) {
+    @Override
+    public Task update(Task task) {
         validateTask(task, true);
         return taskService.modificar(task);
     }
 
-    public void eliminar(Long id) {
+    @Override
+    public void delete(Long id) {
         validateId(id);
         taskService.eliminar(id);
     }
 
-    public Task obtenerPorId(Long id) {
+    @Override
+    public Task findById(Long id) {
         validateId(id);
         return taskService.obtenerPorId(id);
     }
 
-    public List<Task> listar() {
+    @Override
+    public List<Task> findAll() {
         return taskService.listar();
     }
 

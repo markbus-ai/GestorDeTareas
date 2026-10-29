@@ -1,5 +1,6 @@
 package com.trullo.controller;
 
+import com.trullo.exception.ValidationException;
 import com.trullo.model.Label;
 import com.trullo.interfaces.BaseInterface;
 import com.trullo.interfaces.services.LabelService;

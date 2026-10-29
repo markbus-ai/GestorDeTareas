@@ -1,5 +1,6 @@
 package com.trullo.controller;
 
+import com.trullo.exception.ValidationException;
 /**
  * Contrato de la capa de controladores para el envío de notificaciones.
  *

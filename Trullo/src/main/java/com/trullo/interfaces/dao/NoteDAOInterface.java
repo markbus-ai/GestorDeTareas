@@ -4,7 +4,7 @@ import com.trullo.model.Note;
 import com.trullo.interfaces.BaseInterface;
 
 /**
- * Definira las acciones extra para Notas que se requieran en algun momento.
+ * Definirá las acciones extra para notas que se requieran en algún momento.
  *
  * @author Nahuel Romero
  */

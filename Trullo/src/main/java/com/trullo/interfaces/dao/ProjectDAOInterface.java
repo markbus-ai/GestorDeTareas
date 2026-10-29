@@ -4,7 +4,7 @@ import com.trullo.interfaces.BaseInterface;
 import com.trullo.model.Proyecto;
 
 /**
- * Definira las acciones extra para Projectos que se requieran en algun momento.
+ * Definirá las acciones extra para proyectos que se requieran en algún momento.
  *
  * @author Nahuel Romero
  */

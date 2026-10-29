@@ -17,7 +17,7 @@ import com.trullo.interfaces.BaseInterface;
  */
 public interface TaskDAOInterface extends BaseInterface<Task> {
 
-     /**
+    /**
      * Busca las tareas que pertenecen a un proyecto.
      *
      * @param projectId identificador del proyecto
@@ -25,7 +25,7 @@ public interface TaskDAOInterface extends BaseInterface<Task> {
      */
     List<Task> findByProjectId(Long projectId);
 
-     /**
+    /**
      * Busca las tareas según su estado.
      *
      * @param status estado por el que filtrar
@@ -48,7 +48,7 @@ public interface TaskDAOInterface extends BaseInterface<Task> {
      * @return lista de tareas etiquetadas; vacía si no hay ninguna
      */
     List<Task> findByLabelId(Long labelId);
-    
+
     /**
      * Obtiene las tareas cuya fecha límite ya pasó y que no están completadas.
      *
@@ -56,7 +56,7 @@ public interface TaskDAOInterface extends BaseInterface<Task> {
      */
     List<Task> findOverdue();
 
-     /**
+    /**
      * Obtiene las tareas que vencen entre hoy y los próximos días indicados,
      * excluyendo las completadas.
      *

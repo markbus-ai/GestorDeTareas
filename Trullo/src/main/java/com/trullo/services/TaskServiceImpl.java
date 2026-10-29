@@ -1,6 +1,8 @@
 package com.trullo.services;
 
+import com.trullo.exception.DaoException;
 import com.trullo.exception.NotFoundException;
+import com.trullo.exception.ServiceException;
 import com.trullo.interfaces.dao.LabelDAOInterface;
 import com.trullo.interfaces.dao.TaskDAOInterface;
 import com.trullo.interfaces.dao.TaskLabelDAOInterface;
@@ -14,6 +16,8 @@ import java.util.List;
 /**
  * Implementación de {@link TaskService} que delega la persistencia en {@link TaskDAOInterface} y
  * la asociación con etiquetas en {@link TaskLabelDAOInterface}.
+ *
+ * <p>Los errores de persistencia se traducen a {@link ServiceException} con un mensaje claro.
  */
 public class TaskServiceImpl implements TaskService {
     private static final String ENTIDAD = "Tarea";
@@ -39,153 +43,245 @@ public class TaskServiceImpl implements TaskService {
 
     /**
      * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public Task crear(Task task) {
-        return taskDAO.create(task);
+        try {
+            return taskDAO.create(task);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudo crear la tarea", e);
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @throws NotFoundException si la tarea no existe
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public Task modificar(Task task) {
         obtenerPorId(task.getId());
-        return taskDAO.update(task);
+        try {
+            return taskDAO.update(task);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudo modificar la tarea con id " + task.getId(), e);
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @throws NotFoundException si la tarea no existe
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public void eliminar(Long id) {
         obtenerPorId(id);
-        taskDAO.delete(id);
+        try {
+            taskDAO.delete(id);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudo eliminar la tarea con id " + id, e);
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @throws NotFoundException si la tarea no existe
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public Task obtenerPorId(Long id) {
-        return NotFoundException.requireFound(taskDAO.findById(id), ENTIDAD, id);
+        try {
+            return NotFoundException.requireFound(taskDAO.findById(id), ENTIDAD, id);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudo obtener la tarea con id " + id, e);
+        }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public List<Task> listar() {
-        return taskDAO.findAll();
+        try {
+            return taskDAO.findAll();
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudieron listar las tareas", e);
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @throws NotFoundException si la tarea no existe
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public void cambiarEstado(Long id, TaskStatus estado) {
         Task task = obtenerPorId(id);
         task.setStatus(estado);
-        taskDAO.update(task);
+        try {
+            taskDAO.update(task);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudo cambiar el estado de la tarea con id " + id, e);
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @throws NotFoundException si la tarea no existe
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public void establecerPrioridad(Long id, TaskPriority prioridad) {
         Task task = obtenerPorId(id);
         task.setPriority(prioridad);
-        taskDAO.update(task);
+        try {
+            taskDAO.update(task);
+        } catch (DaoException e) {
+            throw new ServiceException(
+                    "No se pudo establecer la prioridad de la tarea con id " + id, e);
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @throws NotFoundException si la tarea no existe
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public void establecerFechaLimite(Long id, LocalDate fechaLimite) {
         Task task = obtenerPorId(id);
         task.setDueDate(fechaLimite);
-        taskDAO.update(task);
+        try {
+            taskDAO.update(task);
+        } catch (DaoException e) {
+            throw new ServiceException(
+                    "No se pudo establecer la fecha límite de la tarea con id " + id, e);
+        }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public List<Task> listarPorProyecto(Long projectId) {
-        return taskDAO.findByProjectId(projectId);
+        try {
+            return taskDAO.findByProjectId(projectId);
+        } catch (DaoException e) {
+            throw new ServiceException(
+                    "No se pudieron listar las tareas del proyecto con id " + projectId, e);
+        }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public List<Task> filtrarPorEstado(TaskStatus estado) {
-        return taskDAO.findByStatus(estado);
+        try {
+            return taskDAO.findByStatus(estado);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudieron filtrar las tareas por estado", e);
+        }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public List<Task> filtrarPorPrioridad(TaskPriority prioridad) {
-        return taskDAO.findByPriority(prioridad);
+        try {
+            return taskDAO.findByPriority(prioridad);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudieron filtrar las tareas por prioridad", e);
+        }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public List<Task> filtrarPorEtiqueta(Long labelId) {
-        return taskDAO.findByLabelId(labelId);
+        try {
+            return taskDAO.findByLabelId(labelId);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudieron filtrar las tareas por etiqueta", e);
+        }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public List<Task> listarProximasAVencer(int dias) {
-        return taskDAO.findDueToday(dias);
+        try {
+            return taskDAO.findDueToday(dias);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudieron listar las tareas próximas a vencer", e);
+        }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public List<Task> listarVencidas() {
-        return taskDAO.findOverdue();
+        try {
+            return taskDAO.findOverdue();
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudieron listar las tareas vencidas", e);
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @throws NotFoundException si la tarea o la etiqueta no existen
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public void asociarEtiqueta(Long taskId, Long labelId) {
         obtenerPorId(taskId);
-        NotFoundException.requireFound(labelDAO.findById(labelId), ENTIDAD_ETIQUETA, labelId);
-        taskLabelDAO.addLabel(taskId, labelId);
+        try {
+            NotFoundException.requireFound(labelDAO.findById(labelId), ENTIDAD_ETIQUETA, labelId);
+            taskLabelDAO.addLabel(taskId, labelId);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudo asociar la etiqueta a la tarea con id " + taskId, e);
+        }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
      */
     @Override
     public void quitarEtiqueta(Long taskId, Long labelId) {
-        taskLabelDAO.removeLabel(taskId, labelId);
+        try {
+            taskLabelDAO.removeLabel(taskId, labelId);
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudo quitar la etiqueta de la tarea con id " + taskId, e);
+        }
     }
 }

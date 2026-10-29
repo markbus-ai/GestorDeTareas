@@ -1,11 +1,12 @@
 package com.trullo.controller;
 
+import com.trullo.interfaces.BaseInterface;
 import com.trullo.interfaces.services.LabelService;
 import com.trullo.model.Label;
 
 import java.util.List;
 
-public class LabelController implements CrudValidator {
+public class LabelController implements CrudValidator, BaseInterface<Label> {
     private final LabelService labelService;
 
     public LabelController(LabelService labelService) {
@@ -13,27 +14,32 @@ public class LabelController implements CrudValidator {
         this.labelService = labelService;
     }
 
-    public Label crear(Label label) {
+    @Override
+    public Label create(Label label) {
         validateLabel(label, false);
         return labelService.crear(label);
     }
 
-    public Label modificar(Label label) {
+    @Override
+    public Label update(Label label) {
         validateLabel(label, true);
         return labelService.modificar(label);
     }
 
-    public void eliminar(Long id) {
+    @Override
+    public void delete(Long id) {
         validateId(id);
         labelService.eliminar(id);
     }
 
-    public Label obtenerPorId(Long id) {
+    @Override
+    public Label findById(Long id) {
         validateId(id);
         return labelService.obtenerPorId(id);
     }
 
-    public List<Label> listar() {
+    @Override
+    public List<Label> findAll() {
         return labelService.listar();
     }
 

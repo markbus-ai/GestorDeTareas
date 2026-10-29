@@ -1,5 +1,6 @@
 package com.trullo.controller;
 
+import com.trullo.interfaces.BaseInterface;
 import com.trullo.exception.ValidationException;
 import com.trullo.interfaces.services.ProyectoService;
 import com.trullo.model.EstadoProyecto;
@@ -8,7 +9,7 @@ import com.trullo.model.Proyecto;
 import java.time.LocalDate;
 import java.util.List;
 
-public class ProyectoController implements CrudValidator {
+public class ProyectoController implements CrudValidator, BaseInterface<Proyecto> {
     private final ProyectoService proyectoService;
 
     public ProyectoController(ProyectoService proyectoService) {
@@ -16,27 +17,32 @@ public class ProyectoController implements CrudValidator {
         this.proyectoService = proyectoService;
     }
 
-    public Proyecto crear(Proyecto proyecto) {
+    @Override
+    public Proyecto create(Proyecto proyecto) {
         validateProyecto(proyecto, false);
         return proyectoService.crear(proyecto);
     }
 
-    public Proyecto modificar(Proyecto proyecto) {
+    @Override
+    public Proyecto update(Proyecto proyecto) {
         validateProyecto(proyecto, true);
         return proyectoService.modificar(proyecto);
     }
 
-    public void eliminar(Long id) {
+    @Override
+    public void delete(Long id) {
         validateId(id);
         proyectoService.eliminar(id);
     }
 
-    public Proyecto obtenerPorId(Long id) {
+    @Override
+    public Proyecto findById(Long id) {
         validateId(id);
         return proyectoService.obtenerPorId(id);
     }
 
-    public List<Proyecto> listar() {
+    @Override
+    public List<Proyecto> findAll() {
         return proyectoService.listar();
     }
 

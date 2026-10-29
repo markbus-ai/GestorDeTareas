@@ -1,11 +1,12 @@
 package com.trullo.controller;
 
+import com.trullo.interfaces.BaseInterface;
 import com.trullo.interfaces.services.NoteService;
 import com.trullo.model.Note;
 
 import java.util.List;
 
-public class NoteController implements CrudValidator {
+public class NoteController implements CrudValidator, BaseInterface<Note> {
     private final NoteService noteService;
 
     public NoteController(NoteService noteService) {
@@ -13,27 +14,32 @@ public class NoteController implements CrudValidator {
         this.noteService = noteService;
     }
 
-    public Note crear(Note note) {
+    @Override
+    public Note create(Note note) {
         validateNote(note, false);
         return noteService.crear(note);
     }
 
-    public Note modificar(Note note) {
+    @Override
+    public Note update(Note note) {
         validateNote(note, true);
         return noteService.modificar(note);
     }
 
-    public void eliminar(Long id) {
+    @Override
+    public void delete(Long id) {
         validateId(id);
         noteService.eliminar(id);
     }
 
-    public Note obtenerPorId(Long id) {
+    @Override
+    public Note findById(Long id) {
         validateId(id);
         return noteService.obtenerPorId(id);
     }
 
-    public List<Note> listar() {
+    @Override
+    public List<Note> findAll() {
         return noteService.listar();
     }
 

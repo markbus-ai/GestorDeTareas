@@ -1,12 +1,13 @@
 package com.trullo.controller;
 
+import com.trullo.interfaces.BaseInterface;
 import com.trullo.interfaces.services.ReminderService;
 import com.trullo.model.NotificationChannel;
 import com.trullo.model.Reminder;
 
 import java.util.List;
 
-public class ReminderController implements CrudValidator {
+public class ReminderController implements CrudValidator, BaseInterface<Reminder> {
     private final ReminderService reminderService;
 
     public ReminderController(ReminderService reminderService) {
@@ -14,27 +15,32 @@ public class ReminderController implements CrudValidator {
         this.reminderService = reminderService;
     }
 
-    public Reminder crear(Reminder reminder) {
+    @Override
+    public Reminder create(Reminder reminder) {
         validateReminder(reminder, false);
         return reminderService.crear(reminder);
     }
 
-    public Reminder modificar(Reminder reminder) {
+    @Override
+    public Reminder update(Reminder reminder) {
         validateReminder(reminder, true);
         return reminderService.modificar(reminder);
     }
 
-    public void eliminar(Long id) {
+    @Override
+    public void delete(Long id) {
         validateId(id);
         reminderService.eliminar(id);
     }
 
-    public Reminder obtenerPorId(Long id) {
+    @Override
+    public Reminder findById(Long id) {
         validateId(id);
         return reminderService.obtenerPorId(id);
     }
 
-    public List<Reminder> listar() {
+    @Override
+    public List<Reminder> findAll() {
         return reminderService.listar();
     }
 

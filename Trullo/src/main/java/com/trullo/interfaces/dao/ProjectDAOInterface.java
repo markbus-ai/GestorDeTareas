@@ -1,6 +1,6 @@
 package com.trullo.interfaces.dao;
 
-import com.trullo.interfaces.BaseDAOInterface;
+import com.trullo.interfaces.BaseInterface;
 import com.trullo.model.Proyecto;
 
 /**
@@ -8,5 +8,5 @@ import com.trullo.model.Proyecto;
  *
  * @author Nahuel Romero
  */
-public interface ProjectDAOInterface extends BaseDAOInterface<Proyecto> {
+public interface ProjectDAOInterface extends BaseInterface<Proyecto> {
 }

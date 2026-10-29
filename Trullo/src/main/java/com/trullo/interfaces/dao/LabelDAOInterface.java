@@ -2,14 +2,14 @@ package com.trullo.interfaces.dao;
 
 import com.trullo.model.Label;
 import java.util.List;
-import com.trullo.interfaces.BaseDAOInterface;
+import com.trullo.interfaces.BaseInterface;
 
 /**
  * Define las operaciones de acceso a datos para las etiquetas de tareas.
  *
  * @author Nahuel Romero
  */
-public interface LabelDAOInterface extends BaseDAOInterface<Label> {
+public interface LabelDAOInterface extends BaseInterface<Label> {
     /**
      * Busca las etiquetas asociadas a una tarea.
      *

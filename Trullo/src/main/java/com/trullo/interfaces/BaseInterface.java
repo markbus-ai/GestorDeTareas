@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @param <T> tipo de entidad sobre la que se realizarán las operaciones
  */
-public interface BaseDAOInterface<T> {
+public interface BaseInterface<T> {
 
     /**
      * Crea una nueva entidad.

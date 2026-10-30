@@ -11,8 +11,21 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO encargado de gestionar el acceso a datos de los recordatorios.
+ *
+ * <p>Implementa las operaciones CRUD definidas en {@link ReminderDAOInterface} y permite
+ * consultar los recordatorios de una tarea y los pendientes de envío.
+ *
+ * @author Nahuel Romero
+ */
 public class ReminderDAO implements ReminderDAOInterface {
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Reminder create(Reminder reminder) {
         String sql = "INSERT INTO reminders (task_id, scheduled_at, channel, target_phone, target_email, sent) VALUES (?, ?, ?, ?, ?, ?)";
@@ -37,6 +50,11 @@ public class ReminderDAO implements ReminderDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Reminder update(Reminder reminder) {
         String sql = "UPDATE reminders SET task_id = ?, scheduled_at = ?, channel = ?, target_phone = ?, target_email = ?, sent = ? WHERE id = ?";
@@ -56,6 +74,11 @@ public class ReminderDAO implements ReminderDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM reminders WHERE id = ?";
@@ -68,6 +91,11 @@ public class ReminderDAO implements ReminderDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Reminder findById(Long id) {
         String sql = "SELECT * FROM reminders WHERE id = ?";
@@ -84,6 +112,11 @@ public class ReminderDAO implements ReminderDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Reminder> findAll() {
         String sql = "SELECT * FROM reminders";
@@ -100,6 +133,11 @@ public class ReminderDAO implements ReminderDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Reminder> findByTaskId(Long taskId) {
         String sql = "SELECT * FROM reminders WHERE task_id = ?";
@@ -117,6 +155,11 @@ public class ReminderDAO implements ReminderDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Reminder> findPending() {
         String sql = "SELECT * FROM reminders WHERE sent = false AND scheduled_at <= NOW()";

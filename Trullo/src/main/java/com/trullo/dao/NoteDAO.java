@@ -9,8 +9,20 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO encargado de gestionar el acceso a datos de las notas.
+ *
+ * <p>Implementa las operaciones CRUD definidas en {@link NoteDAOInterface}.
+ *
+ * @author Nahuel Romero
+ */
 public class NoteDAO implements NoteDAOInterface {
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Note create(Note note) {
         String sql = "INSERT INTO notes (title, content) VALUES (?, ?)";
@@ -31,6 +43,11 @@ public class NoteDAO implements NoteDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Note update(Note note) {
         String sql = "UPDATE notes SET title = ?, content = ? WHERE id = ?";
@@ -46,6 +63,11 @@ public class NoteDAO implements NoteDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM notes WHERE id = ?";
@@ -58,6 +80,11 @@ public class NoteDAO implements NoteDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Note findById(Long id) {
         String sql = "SELECT * FROM notes WHERE id = ?";
@@ -74,6 +101,11 @@ public class NoteDAO implements NoteDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Note> findAll() {
         String sql = "SELECT * FROM notes";

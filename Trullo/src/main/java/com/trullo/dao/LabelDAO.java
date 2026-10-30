@@ -11,14 +11,19 @@ import java.util.List;
 
 /**
  * DAO encargado de gestionar el acceso a datos de las etiquetas de tareas.
- * <p>
- * Implementa las operaciones CRUD definidas en {@link com.trullo.interfaces.BaseInterface}
+ *
+ * <p>Implementa las operaciones CRUD definidas en {@link com.trullo.interfaces.BaseInterface}
  * y permite consultar las etiquetas asociadas a una tarea específica.
  *
  * @author Nahuel Romero
  */
 public class LabelDAO implements LabelDAOInterface {
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Label create(Label label) {
         String sql = "INSERT INTO labels (name, color) VALUES (?, ?)";
@@ -39,6 +44,11 @@ public class LabelDAO implements LabelDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Label update(Label label) {
         String sql = "UPDATE labels SET name = ?, color = ? WHERE id = ?";
@@ -54,6 +64,11 @@ public class LabelDAO implements LabelDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM labels WHERE id = ?";
@@ -66,6 +81,11 @@ public class LabelDAO implements LabelDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Label findById(Long id) {
         String sql = "SELECT * FROM labels WHERE id = ?";
@@ -82,6 +102,11 @@ public class LabelDAO implements LabelDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Label> findAll() {
         String sql = "SELECT * FROM labels";
@@ -98,6 +123,11 @@ public class LabelDAO implements LabelDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Label> findByTaskId(Long taskId) {
         String sql = "SELECT l.* FROM labels l INNER JOIN task_label tl ON l.id = tl.label_id WHERE tl.task_id = ?";

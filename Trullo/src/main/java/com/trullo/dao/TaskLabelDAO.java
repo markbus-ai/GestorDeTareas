@@ -9,8 +9,21 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO encargado de gestionar la relación entre tareas y etiquetas.
+ *
+ * <p>Implementa las operaciones definidas en {@link TaskLabelDAOInterface} para asociar,
+ * quitar y consultar etiquetas de una tarea.
+ *
+ * @author Nahuel Romero
+ */
 public class TaskLabelDAO implements TaskLabelDAOInterface {
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public void addLabel(Long taskId, Long labelId) {
         String sql = "INSERT INTO task_label (task_id, label_id) VALUES (?, ?)";
@@ -24,6 +37,11 @@ public class TaskLabelDAO implements TaskLabelDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public void removeLabel(Long taskId, Long labelId) {
         String sql = "DELETE FROM task_label WHERE task_id = ? AND label_id = ?";
@@ -37,6 +55,11 @@ public class TaskLabelDAO implements TaskLabelDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Label> findLabelsByTaskId(Long taskId) {
         String sql = "SELECT l.* FROM labels l INNER JOIN task_label tl ON l.id = tl.label_id WHERE tl.task_id = ?";

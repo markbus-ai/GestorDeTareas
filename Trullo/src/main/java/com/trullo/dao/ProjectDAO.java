@@ -11,8 +11,20 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO encargado de gestionar el acceso a datos de los proyectos.
+ *
+ * <p>Implementa las operaciones CRUD definidas en {@link ProjectDAOInterface}.
+ *
+ * @author Nahuel Romero
+ */
 public class ProjectDAO implements ProjectDAOInterface {
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Proyecto create(Proyecto proyecto) {
         String sql = "INSERT INTO projects (name, description, status, due_date) VALUES (?, ?, ?, ?)";
@@ -35,6 +47,11 @@ public class ProjectDAO implements ProjectDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Proyecto update(Proyecto proyecto) {
         String sql = "UPDATE projects SET name = ?, description = ?, status = ?, due_date = ? WHERE id = ?";
@@ -52,6 +69,11 @@ public class ProjectDAO implements ProjectDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM projects WHERE id = ?";
@@ -64,6 +86,11 @@ public class ProjectDAO implements ProjectDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Proyecto findById(Long id) {
         String sql = "SELECT * FROM projects WHERE id = ?";
@@ -80,6 +107,11 @@ public class ProjectDAO implements ProjectDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Proyecto> findAll() {
         String sql = "SELECT * FROM projects";

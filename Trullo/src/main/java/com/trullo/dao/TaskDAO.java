@@ -12,8 +12,22 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO encargado de gestionar el acceso a datos de las tareas.
+ *
+ * <p>Implementa las operaciones CRUD definidas en {@link TaskDAOInterface} y permite
+ * consultar tareas por proyecto, estado, prioridad y etiqueta, además de las vencidas
+ * próximas a vencer.
+ *
+ * @author Nahuel Romero
+ */
 public class TaskDAO implements TaskDAOInterface {
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Task create(Task task) {
         String sql = "INSERT INTO tasks (title, description, status, priority, due_date, project_id) VALUES (?, ?, ?, ?, ?, ?)";
@@ -46,6 +60,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Task update(Task task) {
         String sql = "UPDATE tasks SET title = ?, description = ?, status = ?, priority = ?, due_date = ?, project_id = ? WHERE id = ?";
@@ -73,6 +92,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM tasks WHERE id = ?";
@@ -85,6 +109,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public Task findById(Long id) {
         String sql = "SELECT * FROM tasks WHERE id = ?";
@@ -101,6 +130,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Task> findAll() {
         String sql = "SELECT * FROM tasks";
@@ -117,6 +151,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Task> findByProjectId(Long projectId) {
         String sql = "SELECT * FROM tasks WHERE project_id = ?";
@@ -134,6 +173,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Task> findByStatus(TaskStatus status) {
         String sql = "SELECT * FROM tasks WHERE status = ?";
@@ -151,6 +195,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Task> findByPriority(TaskPriority priority) {
         String sql = "SELECT * FROM tasks WHERE priority = ?";
@@ -168,6 +217,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Task> findByLabelId(Long labelId) {
         String sql = "SELECT t.* FROM tasks t INNER JOIN task_label tl ON t.id = tl.task_id WHERE tl.label_id = ?";
@@ -185,6 +239,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Task> findOverdue() {
         String sql = "SELECT * FROM tasks WHERE due_date < CURRENT_DATE AND status != 'COMPLETADA'";
@@ -201,6 +260,11 @@ public class TaskDAO implements TaskDAOInterface {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws DaoException si falla el acceso a datos
+     */
     @Override
     public List<Task> findDueToday(int days) {
         String sql = "SELECT * FROM tasks WHERE due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + ? * INTERVAL '1 DAY' AND status != 'COMPLETADA'";

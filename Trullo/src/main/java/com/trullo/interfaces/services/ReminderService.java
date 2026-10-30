@@ -47,4 +47,11 @@ public interface ReminderService {
      * @return la lista de recordatorios; vacía si no hay ninguno
      */
     List<Reminder> listar();
+
+    /**
+     * Lista los recordatorios vencidos que todavía no se enviaron.
+     *
+     * @return los recordatorios pendientes de envío; vacía si no hay ninguno
+     */
+    List<Reminder> listarPendientes();
 }

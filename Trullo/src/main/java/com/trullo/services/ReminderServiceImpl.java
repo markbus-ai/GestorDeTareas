@@ -103,4 +103,18 @@ public class ReminderServiceImpl implements ReminderService {
             throw new ServiceException("No se pudieron listar los recordatorios", e);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws ServiceException si falla la persistencia
+     */
+    @Override
+    public List<Reminder> listarPendientes() {
+        try {
+            return reminderDAO.findPending();
+        } catch (DaoException e) {
+            throw new ServiceException("No se pudieron listar los recordatorios pendientes", e);
+        }
+    }
 }

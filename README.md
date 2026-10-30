@@ -78,6 +78,27 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 mvn compile
 ```
 
+## 📲 Recordatorios por WhatsApp
+
+Al arrancar la app se levanta un `ReminderScheduler` en segundo plano. Cada minuto busca los recordatorios vencidos y no enviados con canal `WHATSAPP` o `AMBOS`, los manda de a uno con WhatsPlay (`scripts/send_whatsapp.py`) y marca como enviados los que salieron bien. Los que fallan quedan pendientes y se reintentan en la próxima pasada.
+
+Se configura en el `.env`:
+
+```
+WHATSAPP_DRIVER=whatsplay   # cualquier otro valor lo apaga
+WHATSPLAY_DIR=/ruta/a/whatsapp-skill
+```
+
+Hace falta tener `uv` y la carpeta de WhatsPlay con su `whatsapp_session`. La primera vez hay que vincular el WhatsApp escaneando el QR:
+
+```bash
+cd Trullo
+uv run --project "$WHATSPLAY_DIR" python scripts/send_whatsapp.py \
+  --session "$WHATSPLAY_DIR/whatsapp_session" --login-only
+```
+
+Se abre el navegador, escaneás el QR desde el celular y la sesión queda guardada para los envíos siguientes.
+
 ## 🎨 Temas
 
 `ThemeManager` guarda dos paletas (`D_*` y `L_*`) y expone `fondo()`, `texto()`, `tarjeta()`, etc. Los paneles se suscriben con `ThemeManager.onThemeChange(() -> repaint())`. El toggle de Configuración hace `ThemeManager.toggle()`.
@@ -90,7 +111,8 @@ Todo el código está comentado con onda estudiante informal, para que se entien
 
 - [ ] Persistencia real (archivos / SQLite) via `repository` + `dao`
 - [ ] Editar / borrar tareas y notas
-- [ ] Recordatorios con hora y notificación
+- [x] Recordatorios por WhatsApp
+- [ ] Recordatorios por email
 - [ ] Exportar a JSON
 
 ---

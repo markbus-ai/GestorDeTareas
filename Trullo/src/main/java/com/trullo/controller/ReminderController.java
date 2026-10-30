@@ -1,10 +1,11 @@
 package com.trullo.controller;
 
 import com.trullo.exception.ValidationException;
-import com.trullo.model.NotificationChannel;
 import com.trullo.model.Reminder;
+import com.trullo.model.ReminderTarget;
 import com.trullo.interfaces.BaseInterface;
 import com.trullo.interfaces.services.ReminderService;
+import com.trullo.notification.NotifierRegistry;
 import java.util.List;
 
 /**
@@ -12,22 +13,25 @@ import java.util.List;
  *
  * <p>Valida las entradas correspondientes a recordatorios y delega las operaciones de alta,
  * baja, modificación y consulta en {@link ReminderService}. Un recordatorio requiere
- * {@code taskId}, {@code scheduledAt} y {@code channel} no nulos, y el destino debe
- * corresponder al canal indicado: teléfono para WhatsApp, correo para email, y ambos para el
- * canal combinado.
+ * {@code taskId} y {@code scheduledAt} no nulos. Sus destinos se agregan aparte, y cada
+ * dirección se valida con el canal correspondiente del {@link NotifierRegistry}.
  */
 public class ReminderController implements CrudValidator, BaseInterface<Reminder> {
     private final ReminderService reminderService;
+    private final NotifierRegistry notifiers;
 
     /**
      * Crea un controlador de recordatorios.
      *
      * @param reminderService el servicio de recordatorios a utilizar; no puede ser {@code null}
-     * @throws ValidationException si {@code reminderService} es {@code null}
+     * @param notifiers los canales de notificación disponibles; no puede ser {@code null}
+     * @throws ValidationException si algún parámetro es {@code null}
      */
-    public ReminderController(ReminderService reminderService) {
+    public ReminderController(ReminderService reminderService, NotifierRegistry notifiers) {
         requireNonNull(reminderService, "reminderService");
+        requireNonNull(notifiers, "notifiers");
         this.reminderService = reminderService;
+        this.notifiers = notifiers;
     }
 
     /**
@@ -35,12 +39,11 @@ public class ReminderController implements CrudValidator, BaseInterface<Reminder
      *
      * @param reminder el recordatorio a crear
      * @return el recordatorio creado devuelto por el servicio
-     * @throws ValidationException si el recordatorio es nulo, si faltan datos obligatorios, o
-     *                             si el destino no es válido para el canal indicado
+     * @throws ValidationException si el recordatorio es nulo o si faltan datos obligatorios
      */
     @Override
     public Reminder create(Reminder reminder) {
-        validateReminder(reminder, false);
+        validateReminder(reminder);
         return reminderService.crear(reminder);
     }
 
@@ -49,13 +52,13 @@ public class ReminderController implements CrudValidator, BaseInterface<Reminder
      *
      * @param reminder el recordatorio con los datos actualizados
      * @return el recordatorio modificado devuelto por el servicio
-     * @throws ValidationException si el recordatorio es nulo, si su identificador es nulo, si
-     *                             faltan datos obligatorios, o si el destino no es válido para
-     *                             el canal indicado
+     * @throws ValidationException si el recordatorio es nulo, si su identificador es nulo o si
+     *                             faltan datos obligatorios
      */
     @Override
     public Reminder update(Reminder reminder) {
-        validateReminder(reminder, true);
+        validateReminder(reminder);
+        validateId(reminder.getId());
         return reminderService.modificar(reminder);
     }
 
@@ -95,45 +98,32 @@ public class ReminderController implements CrudValidator, BaseInterface<Reminder
     }
 
     /**
-     * Valida un recordatorio antes de enviarlo al servicio.
+     * Agrega un destino de envío a un recordatorio.
      *
-     * @param reminder el recordatorio a validar
-     * @param requireId indica si debe exigirse un identificador no nulo
-     * @throws ValidationException si el recordatorio es nulo, si se exige identificador y este
-     *                             es nulo, si faltan datos obligatorios, o si el destino no es
-     *                             válido para el canal indicado
+     * @param reminderId el identificador del recordatorio
+     * @param channel el identificador del canal, por ejemplo {@code whatsapp} o {@code email}
+     * @param address la dirección de destino dentro del canal
+     * @return el destino creado devuelto por el servicio
+     * @throws ValidationException si falta algún dato, si el canal no está disponible o si la
+     *                             dirección no es válida para el canal
      */
-    // validar el reminder antes de mandarlo al service, no dejes pasar canales truchos.
-    // chequeá el destino según el canal, no aceptes teléfonos ni mails vacíos.
-    private void validateReminder(Reminder reminder, boolean requireId) {
-        requireNonNull(reminder, "reminder");
-        if (requireId) {
-            validateId(reminder.getId());
-        }
-        requireNonNull(reminder.getTaskId(), "taskId");
-        requireNonNull(reminder.getScheduledAt(), "scheduledAt");
-        requireNonNull(reminder.getChannel(), "channel");
-        validateTargets(reminder);
+    public ReminderTarget agregarDestino(Long reminderId, String channel, String address) {
+        validateId(reminderId);
+        requireText(channel, "channel");
+        requireText(address, "address");
+        notifiers.validate(channel, address);
+        return reminderService.agregarDestino(reminderId, channel, address);
     }
 
     /**
-     * Valida el destino del recordatorio según su canal.
+     * Valida los datos obligatorios de un recordatorio antes de enviarlo al servicio.
      *
-     * <p>Para WhatsApp exige {@code targetPhone}; para email exige {@code targetEmail}; para el
-     * canal combinado exige ambos. Si el canal no es ninguno de esos, no realiza comprobaciones.
-     *
-     * @param reminder el recordatorio cuyo destino se valida
-     * @throws ValidationException si el destino exigido para el canal está vacío
+     * @param reminder el recordatorio a validar
+     * @throws ValidationException si el recordatorio es nulo o si faltan datos obligatorios
      */
-    private void validateTargets(Reminder reminder) {
-        NotificationChannel channel = reminder.getChannel();
-        if (channel == NotificationChannel.WHATSAPP) {
-            requireText(reminder.getTargetPhone(), "targetPhone");
-        } else if (channel == NotificationChannel.EMAIL) {
-            requireText(reminder.getTargetEmail(), "targetEmail");
-        } else if (channel == NotificationChannel.AMBOS) {
-            requireText(reminder.getTargetPhone(), "targetPhone");
-            requireText(reminder.getTargetEmail(), "targetEmail");
-        }
+    private void validateReminder(Reminder reminder) {
+        requireNonNull(reminder, "reminder");
+        requireNonNull(reminder.getTaskId(), "taskId");
+        requireNonNull(reminder.getScheduledAt(), "scheduledAt");
     }
 }

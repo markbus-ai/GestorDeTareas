@@ -1,0 +1,2 @@
+com.trullo.notification.whatsapp.WhatsAppNotifierFactory
+com.trullo.notification.email.EmailNotifierFactory

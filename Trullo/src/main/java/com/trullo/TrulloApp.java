@@ -3,6 +3,7 @@ package com.trullo;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.trullo.frontend.*;
+import com.trullo.notification.ReminderNotifications;
 import com.trullo.recursos.EmojiIcon;
 import javax.swing.*;
 import java.awt.*;
@@ -30,6 +31,9 @@ public class TrulloApp {
                 frame.repaint();
             }
         });
+
+        // Envío de recordatorios en segundo plano por los canales configurados en el .env.
+        ReminderNotifications.start();
 
         // Todo lo relacionado con Swing se ejecuta en el hilo de eventos.
         SwingUtilities.invokeLater(() -> {

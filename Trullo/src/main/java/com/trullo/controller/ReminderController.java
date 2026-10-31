@@ -2,10 +2,8 @@ package com.trullo.controller;
 
 import com.trullo.exception.ValidationException;
 import com.trullo.model.Reminder;
-import com.trullo.model.ReminderTarget;
 import com.trullo.interfaces.BaseInterface;
 import com.trullo.interfaces.services.ReminderService;
-import com.trullo.notification.NotifierRegistry;
 import java.util.List;
 
 /**
@@ -13,25 +11,21 @@ import java.util.List;
  *
  * <p>Valida las entradas correspondientes a recordatorios y delega las operaciones de alta,
  * baja, modificación y consulta en {@link ReminderService}. Un recordatorio requiere
- * {@code taskId} y {@code scheduledAt} no nulos. Sus destinos se agregan aparte, y cada
- * dirección se valida con el canal correspondiente del {@link NotifierRegistry}.
+ * {@code taskId} y {@code scheduledAt} no nulos. Sus destinos se gestionan en
+ * {@link ReminderTargetController}.
  */
 public class ReminderController implements CrudValidator, BaseInterface<Reminder> {
     private final ReminderService reminderService;
-    private final NotifierRegistry notifiers;
 
     /**
      * Crea un controlador de recordatorios.
      *
      * @param reminderService el servicio de recordatorios a utilizar; no puede ser {@code null}
-     * @param notifiers los canales de notificación disponibles; no puede ser {@code null}
-     * @throws ValidationException si algún parámetro es {@code null}
+     * @throws ValidationException si {@code reminderService} es {@code null}
      */
-    public ReminderController(ReminderService reminderService, NotifierRegistry notifiers) {
+    public ReminderController(ReminderService reminderService) {
         requireNonNull(reminderService, "reminderService");
-        requireNonNull(notifiers, "notifiers");
         this.reminderService = reminderService;
-        this.notifiers = notifiers;
     }
 
     /**
@@ -95,24 +89,6 @@ public class ReminderController implements CrudValidator, BaseInterface<Reminder
     @Override
     public List<Reminder> findAll() {
         return reminderService.listar();
-    }
-
-    /**
-     * Agrega un destino de envío a un recordatorio.
-     *
-     * @param reminderId el identificador del recordatorio
-     * @param channel el identificador del canal, por ejemplo {@code whatsapp} o {@code email}
-     * @param address la dirección de destino dentro del canal
-     * @return el destino creado devuelto por el servicio
-     * @throws ValidationException si falta algún dato, si el canal no está disponible o si la
-     *                             dirección no es válida para el canal
-     */
-    public ReminderTarget agregarDestino(Long reminderId, String channel, String address) {
-        validateId(reminderId);
-        requireText(channel, "channel");
-        requireText(address, "address");
-        notifiers.validate(channel, address);
-        return reminderService.agregarDestino(reminderId, channel, address);
     }
 
     /**

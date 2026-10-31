@@ -5,7 +5,10 @@ import com.trullo.dao.ReminderDAO;
 import com.trullo.dao.ReminderTargetDAO;
 import com.trullo.dao.TaskDAO;
 import com.trullo.dao.TaskLabelDAO;
+import com.trullo.interfaces.services.ReminderService;
+import com.trullo.interfaces.services.TaskService;
 import com.trullo.services.ReminderServiceImpl;
+import com.trullo.services.ReminderTargetServiceImpl;
 import com.trullo.services.TaskServiceImpl;
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -32,9 +35,11 @@ public final class ReminderNotifications {
         if (notifiers.isEmpty()) {
             return null;
         }
+        ReminderService reminderService = new ReminderServiceImpl(new ReminderDAO());
+        TaskService taskService = new TaskServiceImpl(new TaskDAO(), new LabelDAO(), new TaskLabelDAO());
         ReminderScheduler scheduler = new ReminderScheduler(
-                new ReminderServiceImpl(new ReminderDAO(), new ReminderTargetDAO()),
-                new TaskServiceImpl(new TaskDAO(), new LabelDAO(), new TaskLabelDAO()),
+                new ReminderTargetServiceImpl(new ReminderTargetDAO(), reminderService),
+                new ReminderMessageBuilder(reminderService, taskService),
                 notifiers);
         scheduler.start();
         return scheduler;

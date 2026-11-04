@@ -1,9 +1,11 @@
 package com.trullo.frontend;
 
 import com.trullo.controller.ReminderController;
-import com.trullo.model.NotificationChannel;
+import com.trullo.controller.ReminderTargetController;
 import com.trullo.model.Reminder;
 import com.trullo.model.Task;
+import com.trullo.notification.email.EmailNotifier;
+import com.trullo.notification.whatsapp.WhatsAppNotifier;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -33,17 +35,17 @@ import java.util.Optional;
  */
 public final class NewReminderDialog extends BaseDialog {
 
-    // Etiquetas visibles y su equivalente en el enum del backend.
+    // Etiquetas visibles de los canales; la posición decide a qué destinos se envía.
     private static final String[] CHANNEL_LABELS = {
             "WhatsApp", "Correo electrónico", "WhatsApp + Correo electrónico"
     };
-    private static final NotificationChannel[] CHANNEL_VALUES = {
-            NotificationChannel.WHATSAPP,
-            NotificationChannel.EMAIL,
-            NotificationChannel.AMBOS
-    };
+
+    private static final int WHATSAPP_ONLY_INDEX = 0;
+    private static final int EMAIL_ONLY_INDEX = 1;
+    private static final int WHATSAPP_AND_EMAIL_INDEX = 2;
 
     private final ReminderController reminderController;
+    private final ReminderTargetController reminderTargetController;
     private final LocalDate selectedDate;
     private final JComboBox<Task> taskComboBox;
     private final JSpinner timeSpinner;
@@ -59,10 +61,12 @@ public final class NewReminderDialog extends BaseDialog {
      */
     private NewReminderDialog(Window owner,
                               ReminderController reminderController,
+                              ReminderTargetController reminderTargetController,
                               LocalDate selectedDate,
                               List<Task> tasks) {
         super(owner, "Recordatorio", 560, 600);
         this.reminderController = reminderController;
+        this.reminderTargetController = reminderTargetController;
         this.selectedDate = selectedDate;
 
         // Muestra arriba la fecha elegida en el calendario.
@@ -90,7 +94,7 @@ public final class NewReminderDialog extends BaseDialog {
         channelComboBox.setSelectedIndex(0);
         addFormField("Canal de notificación", channelComboBox);
 
-        phoneField = formTextField("+54 9 11 1234-5678");
+        phoneField = formTextField("+5491112345678");
         emailField = formTextField("name@example.com");
 
         // Las filas de destino se muestran u ocultan según el canal elegido.
@@ -127,12 +131,14 @@ public final class NewReminderDialog extends BaseDialog {
      */
     public static Optional<Reminder> open(Component parent,
                                            ReminderController reminderController,
+                                           ReminderTargetController reminderTargetController,
                                            LocalDate selectedDate,
                                            List<Task> tasks) {
         Window owner = SwingUtilities.getWindowAncestor(parent);
         NewReminderDialog dialog = new NewReminderDialog(
                 owner,
                 reminderController,
+                reminderTargetController,
                 selectedDate,
                 tasks
         );
@@ -210,17 +216,30 @@ public final class NewReminderDialog extends BaseDialog {
      * muestra ambos.
      */
     private void updateTargetVisibility(int selectedChannelIndex) {
-        boolean showPhone = selectedChannelIndex == 0 || selectedChannelIndex == 2;
-        boolean showEmail = selectedChannelIndex == 1 || selectedChannelIndex == 2;
-
-        phoneRow.setVisible(showPhone);
-        emailRow.setVisible(showEmail);
+        phoneRow.setVisible(sendsWhatsApp(selectedChannelIndex));
+        emailRow.setVisible(sendsEmail(selectedChannelIndex));
         revalidate();
         repaint();
     }
 
     /**
-     * Valida el destino según el canal elegido y manda el Reminder al controlador.
+     * Indica si la opción elegida en el combo envía por WhatsApp.
+     */
+    private boolean sendsWhatsApp(int selectedChannelIndex) {
+        return selectedChannelIndex == WHATSAPP_ONLY_INDEX
+                || selectedChannelIndex == WHATSAPP_AND_EMAIL_INDEX;
+    }
+
+    /**
+     * Indica si la opción elegida en el combo envía por correo electrónico.
+     */
+    private boolean sendsEmail(int selectedChannelIndex) {
+        return selectedChannelIndex == EMAIL_ONLY_INDEX
+                || selectedChannelIndex == WHATSAPP_AND_EMAIL_INDEX;
+    }
+
+    /**
+     * Valida el destino según el canal elegido y guarda el Reminder con sus destinos.
      */
     private void createReminder(int selectedChannelIndex) {
         Task selectedTask = (Task) taskComboBox.getSelectedItem();
@@ -229,13 +248,13 @@ public final class NewReminderDialog extends BaseDialog {
             return;
         }
 
-        NotificationChannel channel = CHANNEL_VALUES[selectedChannelIndex];
-        String phone = phoneField.getText() == null ? "" : phoneField.getText().trim();
-        String email = emailField.getText() == null ? "" : emailField.getText().trim();
+        boolean sendsWhatsApp = sendsWhatsApp(selectedChannelIndex);
+        boolean sendsEmail = sendsEmail(selectedChannelIndex);
+        String phone = trimmedText(phoneField);
+        String email = trimmedText(emailField);
 
-        // WhatsApp y "Both" necesitan teléfono.
-        if ((channel == NotificationChannel.WHATSAPP || channel == NotificationChannel.AMBOS)
-                && phone.isEmpty()) {
+        // WhatsApp y la opción combinada necesitan teléfono.
+        if (sendsWhatsApp && phone.isEmpty()) {
             markInvalid(phoneField);
             UiKit.showWarning(this, "Teléfono requerido", "Ingresá un número de teléfono para WhatsApp.");
             return;
@@ -243,8 +262,7 @@ public final class NewReminderDialog extends BaseDialog {
         clearInvalid(phoneField);
 
         // El correo electrónico y la opción combinada necesitan una dirección.
-        if ((channel == NotificationChannel.EMAIL || channel == NotificationChannel.AMBOS)
-                && email.isEmpty()) {
+        if (sendsEmail && email.isEmpty()) {
             markInvalid(emailField);
             UiKit.showWarning(this, "Correo electrónico requerido", "Ingresá una dirección de correo.");
             return;
@@ -254,21 +272,47 @@ public final class NewReminderDialog extends BaseDialog {
         // Combina el día seleccionado con la hora elegida.
         LocalTime time = UiKit.toLocalTime((Date) timeSpinner.getValue());
         LocalDateTime scheduledAt = LocalDateTime.of(selectedDate, time);
-        Reminder reminder = new Reminder(
-                null,
-                selectedTask.getId(),
-                scheduledAt,
-                channel,
-                channel == NotificationChannel.EMAIL ? null : phone,
-                channel == NotificationChannel.WHATSAPP ? null : email,
-                false
-        );
 
+        saveReminder(
+                new Reminder(null, selectedTask.getId(), scheduledAt),
+                sendsWhatsApp ? phone : null,
+                sendsEmail ? email : null
+        );
+    }
+
+    /**
+     * Guarda el recordatorio y un destino por cada dirección informada (null significa que no
+     * se envía por ese canal). Si un destino falla, deshace el recordatorio y muestra el error.
+     */
+    private void saveReminder(Reminder reminder, String phone, String email) {
+        Reminder savedReminder = null;
         try {
-            createdReminder = reminderController.create(reminder);
+            savedReminder = reminderController.create(reminder);
+            if (phone != null) {
+                reminderTargetController.agregarDestino(savedReminder.getId(), WhatsAppNotifier.CHANNEL, phone);
+            }
+            if (email != null) {
+                reminderTargetController.agregarDestino(savedReminder.getId(), EmailNotifier.CHANNEL, email);
+            }
+            createdReminder = savedReminder;
             dispose();
         } catch (RuntimeException exception) {
+            discardReminder(savedReminder, exception);
             UiKit.showError(this, "No se pudo crear el recordatorio", exception);
+        }
+    }
+
+    /**
+     * Borra el recordatorio si no se pudieron guardar sus destinos, para no dejarlo a medias.
+     */
+    private void discardReminder(Reminder reminder, RuntimeException cause) {
+        if (reminder == null) {
+            return;
+        }
+        try {
+            reminderController.delete(reminder.getId());
+        } catch (RuntimeException deleteFailure) {
+            cause.addSuppressed(deleteFailure);
         }
     }
 }

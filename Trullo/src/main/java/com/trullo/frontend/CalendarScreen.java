@@ -1,8 +1,10 @@
 package com.trullo.frontend;
 
 import com.trullo.controller.ReminderController;
+import com.trullo.controller.ReminderTargetController;
 import com.trullo.controller.TaskController;
 import com.trullo.model.Reminder;
+import com.trullo.model.ReminderTarget;
 import com.trullo.model.Task;
 
 import javax.swing.BorderFactory;
@@ -29,6 +31,7 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
 
     // Controladores: recordatorios para el panel derecho y tareas para vincular cada recordatorio.
     private final ReminderController reminderController;
+    private final ReminderTargetController reminderTargetController;
     private final TaskController taskController;
     private final MonthlyCalendarView calendarView;
     private final RemindersPanel remindersPanel;
@@ -41,8 +44,11 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
     /**
      * Arma las dos tarjetas (calendario y recordatorios) y conecta sus callbacks.
      */
-    public CalendarScreen(ReminderController reminderController, TaskController taskController) {
+    public CalendarScreen(ReminderController reminderController,
+                          ReminderTargetController reminderTargetController,
+                          TaskController taskController) {
         this.reminderController = reminderController;
+        this.reminderTargetController = reminderTargetController;
         this.taskController = taskController;
 
         setLayout(new BorderLayout());
@@ -152,8 +158,21 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
                 date,
                 reminders,
                 tasksById,
+                this::targetsOf,
                 this::deleteReminder
         );
+    }
+
+    /**
+     * Busca los destinos de un recordatorio. Si la lectura falla, la tarjeta se muestra igual
+     * con una etiqueta genérica.
+     */
+    private List<ReminderTarget> targetsOf(Reminder reminder) {
+        try {
+            return reminderTargetController.listarDestinos(reminder.getId());
+        } catch (RuntimeException exception) {
+            return List.of();
+        }
     }
 
     /**
@@ -172,6 +191,7 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
         Optional<Reminder> createdReminder = NewReminderDialog.open(
                 this,
                 reminderController,
+                reminderTargetController,
                 calendarView.getSelectedDate(),
                 tasks
         );

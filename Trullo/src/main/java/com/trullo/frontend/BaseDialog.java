@@ -20,6 +20,7 @@ import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.LocalDate;
 
 /**
  * Base de todos los diálogos de la aplicación: superficie redondeada, encabezado propio que se
@@ -230,6 +231,28 @@ public abstract class BaseDialog extends JDialog {
      */
     protected void clearInvalid(JTextArea area) {
         UiKit.applyTextAreaBorder(area, false);
+    }
+
+    /**
+     * Devuelve el texto del campo sin espacios en los extremos; nunca devuelve null.
+     */
+    protected String trimmedText(JTextField field) {
+        return field.getText() == null ? "" : field.getText().trim();
+    }
+
+    /**
+     * Avisa si la fecha límite ya pasó y devuelve true en ese caso. Una fecha null es válida.
+     */
+    protected boolean warnIfPastDate(LocalDate dueDate) {
+        if (dueDate == null || !dueDate.isBefore(LocalDate.now())) {
+            return false;
+        }
+        UiKit.showWarning(
+                this,
+                "Fecha límite inválida",
+                "La fecha límite no puede ser anterior a hoy."
+        );
+        return true;
     }
 
     /**

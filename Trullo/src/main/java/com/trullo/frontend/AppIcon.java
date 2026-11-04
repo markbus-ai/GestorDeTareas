@@ -27,6 +27,7 @@ public final class AppIcon implements Icon {
         TASKS,
         CALENDAR,
         NOTES,
+        FOLDER,
         SETTINGS,
         PLUS,
         CLOSE,
@@ -106,6 +107,7 @@ public final class AppIcon implements Icon {
             case TASKS -> paintTasks(graphics2D);
             case CALENDAR -> paintCalendar(graphics2D);
             case NOTES -> paintNotes(graphics2D);
+            case FOLDER -> paintFolder(graphics2D);
             case SETTINGS -> paintSettings(graphics2D);
             case PLUS -> paintPlus(graphics2D);
             case CLOSE -> paintClose(graphics2D);
@@ -190,6 +192,21 @@ public final class AppIcon implements Icon {
         graphics2D.drawLine(15, 9, 20, 9);
         graphics2D.drawLine(8, 13, 16, 13);
         graphics2D.drawLine(8, 16, 14, 16);
+    }
+
+    /**
+     * Carpeta de proyecto con su pestaña.
+     */
+    private void paintFolder(Graphics2D graphics2D) {
+        Path2D folder = new Path2D.Double();
+        folder.moveTo(3.5, 6.0);
+        folder.lineTo(9.5, 6.0);
+        folder.lineTo(11.5, 8.5);
+        folder.lineTo(20.5, 8.5);
+        folder.lineTo(20.5, 19.0);
+        folder.lineTo(3.5, 19.0);
+        folder.closePath();
+        graphics2D.draw(folder);
     }
 
     /**

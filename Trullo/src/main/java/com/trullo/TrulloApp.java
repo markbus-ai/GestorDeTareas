@@ -2,7 +2,9 @@ package com.trullo;
 
 import com.trullo.bootstrap.DependenceContainer;
 import com.trullo.controller.NoteController;
+import com.trullo.controller.ProyectoController;
 import com.trullo.controller.ReminderController;
+import com.trullo.controller.ReminderTargetController;
 import com.trullo.controller.TaskController;
 import com.trullo.core.Container;
 import com.trullo.frontend.MainWindow;
@@ -47,12 +49,17 @@ public final class TrulloApp {
             TaskController taskController = container.resolve(TaskController.class);
             NoteController noteController = container.resolve(NoteController.class);
             ReminderController reminderController = container.resolve(ReminderController.class);
+            ReminderTargetController reminderTargetController =
+                    container.resolve(ReminderTargetController.class);
+            ProyectoController proyectoController = container.resolve(ProyectoController.class);
 
-            // La ventana recibe los tres controladores y arma las pantallas con ellos.
+            // La ventana recibe los controladores y arma las pantallas con ellos.
             MainWindow mainWindow = new MainWindow(
                     taskController,
                     noteController,
-                    reminderController
+                    reminderController,
+                    reminderTargetController,
+                    proyectoController
             );
             mainWindow.setVisible(true);
         });

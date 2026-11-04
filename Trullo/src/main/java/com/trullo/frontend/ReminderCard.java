@@ -1,7 +1,10 @@
 package com.trullo.frontend;
 
 import com.trullo.model.Reminder;
+import com.trullo.model.ReminderTarget;
 import com.trullo.model.Task;
+import com.trullo.notification.email.EmailNotifier;
+import com.trullo.notification.whatsapp.WhatsAppNotifier;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -13,7 +16,9 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Fila de un recordatorio: título de la tarea, hora, canal y botón para eliminarlo.
@@ -21,10 +26,11 @@ import java.util.function.Consumer;
 public final class ReminderCard extends RoundedPanel {
 
     /**
-     * Recibe el recordatorio, la tarea asociada (puede ser null) y la acción de borrar.
+     * Recibe el recordatorio, la tarea asociada (puede ser null), sus destinos y la acción de borrar.
      */
     public ReminderCard(Reminder reminder,
                         Task task,
+                        List<ReminderTarget> targets,
                         Consumer<Reminder> onDelete) {
         super(new BorderLayout(10, 0), Theme::surfaceAlt, 12);
 
@@ -64,7 +70,7 @@ public final class ReminderCard extends RoundedPanel {
         String timeText = UiKit.formatTime(
                 reminder.getScheduledAt() == null ? null : reminder.getScheduledAt().toLocalTime()
         );
-        String channelText = channelLabel(reminder);
+        String channelText = channelLabel(targets);
         JLabel detailLabel = UiKit.themedLabel(
                 timeText + " · " + channelText,
                 Font.PLAIN,
@@ -87,17 +93,19 @@ public final class ReminderCard extends RoundedPanel {
     }
 
     /**
-     * Traduce el canal del backend a una etiqueta legible en español.
+     * Traduce los canales de los destinos a una etiqueta legible en español.
      */
-    private String channelLabel(Reminder reminder) {
-        if (reminder.getChannel() == null) {
+    private String channelLabel(List<ReminderTarget> targets) {
+        if (targets.isEmpty()) {
             return "Notificación";
         }
-        return switch (reminder.getChannel()) {
-            case WHATSAPP -> "WhatsApp";
-            case EMAIL -> "Correo electrónico";
-            case AMBOS -> "WhatsApp + Correo electrónico";
-        };
+        return targets.stream()
+                .map(target -> switch (target.getChannel()) {
+                    case WhatsAppNotifier.CHANNEL -> "WhatsApp";
+                    case EmailNotifier.CHANNEL -> "Correo electrónico";
+                    default -> target.getChannel();
+                })
+                .collect(Collectors.joining(" + "));
     }
 
     /**

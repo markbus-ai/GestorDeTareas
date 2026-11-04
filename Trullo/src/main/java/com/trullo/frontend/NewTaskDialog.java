@@ -1,28 +1,22 @@
 package com.trullo.frontend;
 
 import com.trullo.controller.TaskController;
+import com.trullo.model.Proyecto;
 import com.trullo.model.Task;
 import com.trullo.model.TaskPriority;
 import com.trullo.model.TaskStatus;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerDateModel;
 import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.time.LocalDate;
-import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,11 +26,11 @@ import java.util.Optional;
 public final class NewTaskDialog extends BaseDialog {
 
     // Textos en español que se muestran en el combo de estado...
-    private static final String[] STATUS_LABELS = {
+    static final String[] STATUS_LABELS = {
             "Pendiente", "En progreso", "Completada", "Atrasada"
     };
     // ...y su equivalente en el enum del backend.
-    private static final TaskStatus[] STATUS_VALUES = {
+    static final TaskStatus[] STATUS_VALUES = {
             TaskStatus.PENDIENTE,
             TaskStatus.EN_PROGRESO,
             TaskStatus.COMPLETADA,
@@ -57,14 +51,16 @@ public final class NewTaskDialog extends BaseDialog {
     private final TaskController taskController;
     private final JTextField titleField;
     private final JTextField descriptionField;
+    private final JComboBox<Proyecto> projectComboBox;
+    private final OptionalDateField dueDateField;
     // Tarea creada, para devolverla a TasksScreen cuando el diálogo se cierra.
     private Task createdTask;
 
     /**
-     * Construye el formulario completo: título, descripción, estado, prioridad y fecha límite.
+     * Construye el formulario completo: título, descripción, proyecto, estado, prioridad y fecha límite.
      */
-    private NewTaskDialog(Window owner, TaskController taskController) {
-        super(owner, "Nueva tarea", 560, 560);
+    private NewTaskDialog(Window owner, TaskController taskController, List<Proyecto> projects) {
+        super(owner, "Nueva tarea", 560, 640);
         this.taskController = taskController;
 
         titleField = formTextField("¿Qué hay que hacer?");
@@ -72,6 +68,11 @@ public final class NewTaskDialog extends BaseDialog {
 
         addFormField("Título", titleField);
         addFormField("Descripción (opcional)", descriptionField);
+
+        projectComboBox = UiKit.projectComboBox(projects, null);
+        projectComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        projectComboBox.setPreferredSize(new Dimension(100, 40));
+        addFormField("Proyecto (opcional)", projectComboBox);
 
         // Estado y prioridad van lado a lado para ahorrar altura.
         JPanel statusAndPriorityRow = new JPanel(new GridLayout(1, 2, 12, 0));
@@ -89,35 +90,8 @@ public final class NewTaskDialog extends BaseDialog {
         formPanel.add(statusAndPriorityRow);
         formPanel.add(javax.swing.Box.createVerticalStrut(14));
 
-        // Checkbox que habilita o deshabilita el selector de fecha.
-        JCheckBox dueDateCheckBox = new JCheckBox("Establecer fecha límite");
-        dueDateCheckBox.setOpaque(false);
-        dueDateCheckBox.setFocusPainted(false);
-        dueDateCheckBox.setFont(UiKit.font(Font.PLAIN, 13));
-        dueDateCheckBox.setForeground(Theme.text());
-        dueDateCheckBox.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        Theme.addListener(() -> dueDateCheckBox.setForeground(Theme.text()));
-
-        JSpinner dueDateSpinner = new JSpinner(new SpinnerDateModel());
-        dueDateSpinner.setEditor(new JSpinner.DateEditor(dueDateSpinner, "dd/MM/yyyy"));
-        dueDateSpinner.setFont(UiKit.font(Font.PLAIN, 13));
-        dueDateSpinner.setEnabled(false);
-        dueDateSpinner.setPreferredSize(new Dimension(150, 34));
-
-        dueDateCheckBox.addActionListener(actionEvent ->
-                dueDateSpinner.setEnabled(dueDateCheckBox.isSelected())
-        );
-
-        JPanel dueDateRow = new JPanel(new BorderLayout(12, 0));
-        dueDateRow.setOpaque(false);
-        dueDateRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        dueDateRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        dueDateRow.add(dueDateCheckBox, BorderLayout.CENTER);
-        dueDateRow.add(dueDateSpinner, BorderLayout.EAST);
-
-        formPanel.add(formLabel("Fecha límite (opcional)"));
-        formPanel.add(javax.swing.Box.createVerticalStrut(8));
-        formPanel.add(dueDateRow);
+        dueDateField = new OptionalDateField("Establecer fecha límite");
+        addFormField("Fecha límite (opcional)", dueDateField);
 
         // Botones del pie: Cancelar cierra y Crear arma la tarea.
         JPanel footer = formFooter();
@@ -126,9 +100,7 @@ public final class NewTaskDialog extends BaseDialog {
         cancelButton.addActionListener(actionEvent -> dispose());
         createButton.addActionListener(actionEvent -> createTask(
                 statusComboBox,
-                priorityComboBox,
-                dueDateCheckBox,
-                dueDateSpinner
+                priorityComboBox
         ));
 
         footer.add(cancelButton);
@@ -140,9 +112,11 @@ public final class NewTaskDialog extends BaseDialog {
     /**
      * Abre el diálogo de forma modal y devuelve la tarea creada (si el usuario la creó).
      */
-    public static Optional<Task> open(Component parent, TaskController taskController) {
+    public static Optional<Task> open(Component parent,
+                                      TaskController taskController,
+                                      List<Proyecto> projects) {
         Window owner = SwingUtilities.getWindowAncestor(parent);
-        NewTaskDialog dialog = new NewTaskDialog(owner, taskController);
+        NewTaskDialog dialog = new NewTaskDialog(owner, taskController, projects);
         dialog.setVisible(true);
         return Optional.ofNullable(dialog.createdTask);
     }
@@ -165,9 +139,7 @@ public final class NewTaskDialog extends BaseDialog {
      * Valida los datos del formulario, crea el modelo Task y lo manda al controlador.
      */
     private void createTask(JComboBox<String> statusComboBox,
-                            JComboBox<String> priorityComboBox,
-                            JCheckBox dueDateCheckBox,
-                            JSpinner dueDateSpinner) {
+                            JComboBox<String> priorityComboBox) {
         // El título es obligatorio: si está vacío, marca el campo y corta.
         String title = titleField.getText() == null ? "" : titleField.getText().trim();
         if (title.isEmpty()) {
@@ -184,25 +156,24 @@ public final class NewTaskDialog extends BaseDialog {
             description = title;
         }
 
-        // La fecha límite solo se lee si el checkbox está marcado.
-        LocalDate dueDate = null;
-        if (dueDateCheckBox.isSelected()) {
-            Date selectedDate = (Date) dueDateSpinner.getValue();
-            dueDate = UiKit.toLocalDate(selectedDate);
-            if (dueDate.isBefore(LocalDate.now())) {
-                UiKit.showWarning(
-                        this,
-                        "Fecha límite inválida",
-                        "La fecha límite no puede ser anterior a hoy."
-                );
-                return;
-            }
+        // La fecha límite es null si el checkbox no está marcado.
+        LocalDate dueDate = dueDateField.getDate();
+        if (warnIfPastDate(dueDate)) {
+            return;
         }
 
         // Convierte los índices de los combos a los enums reales del backend.
         TaskStatus status = STATUS_VALUES[statusComboBox.getSelectedIndex()];
         TaskPriority priority = PRIORITY_VALUES[priorityComboBox.getSelectedIndex()];
-        Task task = new Task(null, title, description, status, priority, dueDate, null);
+        Task task = new Task(
+                null,
+                title,
+                description,
+                status,
+                priority,
+                dueDate,
+                UiKit.selectedProjectId(projectComboBox)
+        );
 
         try {
             // El controlador valida y persiste la tarea; si sale bien, cierra el diálogo.

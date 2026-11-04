@@ -1,6 +1,7 @@
 package com.trullo.frontend;
 
 import com.trullo.model.Reminder;
+import com.trullo.model.ReminderTarget;
 import com.trullo.model.Task;
 
 import javax.swing.BorderFactory;
@@ -16,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Lado derecho de la pantalla de calendario: muestra los recordatorios del día seleccionado.
@@ -68,6 +70,7 @@ public final class RemindersPanel extends JPanel {
     public void showReminders(LocalDate selectedDate,
                               List<Reminder> reminders,
                               Map<Long, Task> tasksById,
+                              Function<Reminder, List<ReminderTarget>> targetsOf,
                               Consumer<Reminder> onDelete) {
         dateLabel.setText("Recordatorios · " + UiKit.formatDate(selectedDate));
         remindersListPanel.removeAll();
@@ -91,7 +94,7 @@ public final class RemindersPanel extends JPanel {
             // Busca la tarea de cada recordatorio para mostrar su título.
             for (Reminder reminder : remindersForDay) {
                 Task task = tasksById.get(reminder.getTaskId());
-                remindersListPanel.add(new ReminderCard(reminder, task, onDelete));
+                remindersListPanel.add(new ReminderCard(reminder, task, targetsOf.apply(reminder), onDelete));
                 remindersListPanel.add(javax.swing.Box.createVerticalStrut(8));
             }
         }

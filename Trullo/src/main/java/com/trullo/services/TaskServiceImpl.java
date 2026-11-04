@@ -140,6 +140,24 @@ public class TaskServiceImpl implements TaskService {
      * @throws ServiceException si falla la persistencia
      */
     @Override
+    public void asignarProyecto(Long id, Long projectId) {
+        Task task = obtenerPorId(id);
+        task.setProjectId(projectId);
+        try {
+            taskDAO.update(task);
+        } catch (DaoException e) {
+            throw new ServiceException(
+                    "No se pudo asignar el proyecto de la tarea con id " + id, e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws NotFoundException si la tarea no existe
+     * @throws ServiceException si falla la persistencia
+     */
+    @Override
     public void establecerPrioridad(Long id, TaskPriority prioridad) {
         Task task = obtenerPorId(id);
         task.setPriority(prioridad);

@@ -21,8 +21,8 @@ public class TaskDAO implements TaskDAOInterface {
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, task.getTitle());
             stmt.setString(2, task.getDescription());
-            stmt.setString(3, task.getStatus().name());
-            stmt.setString(4, task.getPriority().name());
+            stmt.setObject(3, task.getStatus().name(), Types.OTHER);
+            stmt.setObject(4, task.getPriority().name(), Types.OTHER);
             if (task.getDueDate() != null) {
                 stmt.setDate(5, Date.valueOf(task.getDueDate()));
             } else {
@@ -53,8 +53,8 @@ public class TaskDAO implements TaskDAOInterface {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, task.getTitle());
             stmt.setString(2, task.getDescription());
-            stmt.setString(3, task.getStatus().name());
-            stmt.setString(4, task.getPriority().name());
+            stmt.setObject(3, task.getStatus().name(), Types.OTHER);
+            stmt.setObject(4, task.getPriority().name(), Types.OTHER);
             if (task.getDueDate() != null) {
                 stmt.setDate(5, Date.valueOf(task.getDueDate()));
             } else {
@@ -140,7 +140,7 @@ public class TaskDAO implements TaskDAOInterface {
         List<Task> tasks = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, status.name());
+            stmt.setObject(1, status.name(), Types.OTHER);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 tasks.add(mapRow(rs));
@@ -157,7 +157,7 @@ public class TaskDAO implements TaskDAOInterface {
         List<Task> tasks = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, priority.name());
+            stmt.setObject(1, priority.name(), Types.OTHER);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 tasks.add(mapRow(rs));

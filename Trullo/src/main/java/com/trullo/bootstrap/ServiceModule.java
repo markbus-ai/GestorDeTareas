@@ -73,7 +73,7 @@ public final class ServiceModule implements Module {
         container.registerSingleton(
             NotifierRegistry.class,
             () -> NotifierRegistry.fromServiceLoader(
-                Dotenv.configure().ignoreIfMissing().load()
+                com.trullo.core.AppConfig.load()
             )
         );
 

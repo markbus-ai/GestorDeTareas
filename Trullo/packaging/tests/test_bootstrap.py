@@ -1,4 +1,5 @@
 import importlib.util
+from contextlib import nullcontext
 import json
 import os
 from pathlib import Path
@@ -78,7 +79,7 @@ class SetupTest(unittest.TestCase):
         events = []
         def launch(command, **kwargs):
             events.append("application")
-            executable = "Trullo.exe" if sys.platform == "win32" else "bin/Trullo-java"
+            executable = "Trullo-java.exe" if sys.platform == "win32" else "bin/Trullo-java"
             self.assertEqual([str(installation / executable)], command)
             self.assertEqual(data, kwargs["cwd"])
             return 7
@@ -94,6 +95,11 @@ class SetupTest(unittest.TestCase):
                 patch.object(setup.subprocess, "run", side_effect=lambda *a, **kw: events.append("database-stop")):
             self.assertEqual(7, setup.main())
         self.assertEqual(["database-start", "application", "database-stop"], events)
+
+    def test_windows_bootstrap_uses_internal_launcher(self):
+        with patch.object(sys, "platform", "win32"), \
+                patch.object(setup, "setup_lock", return_value=nullcontext()):
+            self.test_application_runs_before_database_is_stopped()
 
     @unittest.skipIf(sys.platform == "win32", "Launcher Linux")
     def test_public_linux_executables_route_to_setup(self):

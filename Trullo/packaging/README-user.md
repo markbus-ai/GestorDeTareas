@@ -19,7 +19,8 @@ desde esta carpeta con:
 
 ## Windows
 
-Instalá Trullo con el setup y abrilo desde el menú Inicio.
+Instalá Trullo con el setup y abrilo desde el menú Inicio o con `Trullo.exe`.
+El ejecutable inicia la base de datos antes de abrir la aplicación.
 
 ## Recordatorios
 

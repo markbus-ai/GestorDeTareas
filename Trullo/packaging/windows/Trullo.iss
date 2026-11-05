@@ -23,7 +23,7 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 [Files]
 Source: "{#PayloadRoot}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 [Icons]
-Name: "{group}\Trullo"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\setup\launch.ps1"""
+Name: "{group}\Trullo"; Filename: "{app}\Trullo.exe"
 Name: "{group}\Reparar preparacion"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\setup\launch.ps1"" -SetupOnly -Repair"
 [Run]
 Filename: "{app}\tools\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Preparando componentes de Windows..."; Flags: waituntilterminated

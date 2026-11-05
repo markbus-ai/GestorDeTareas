@@ -51,7 +51,7 @@ public final class TrulloApp {
         Container container = DependenceContainer.create();
 
         // Envío de recordatorios en segundo plano por los canales configurados en el .env.
-        ReminderNotifications.start();
+        ReminderNotifications.start(container);
 
         // Todo lo visual se construye dentro del hilo de eventos de la interfaz.
         SwingUtilities.invokeLater(() -> {

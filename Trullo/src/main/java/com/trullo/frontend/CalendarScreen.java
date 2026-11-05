@@ -206,6 +206,12 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
      */
     private void deleteReminder(Reminder reminder) {
         try {
+            boolean remote = reminderTargetController.listarDestinos(reminder.getId()).stream()
+                    .anyMatch(target -> "whatsapp".equals(target.getChannel()));
+            if (remote && javax.swing.JOptionPane.showConfirmDialog(this,
+                    "Eliminarlo del calendario no cancela el envio programado en el servidor. ¿Continuar?",
+                    "Eliminar recordatorio local", javax.swing.JOptionPane.YES_NO_OPTION)
+                    != javax.swing.JOptionPane.YES_OPTION) return;
             reminderController.delete(reminder.getId());
             reloadData();
         } catch (RuntimeException exception) {

@@ -83,7 +83,7 @@ mvn compile
 
 Un recordatorio (`reminders`) tiene uno o más destinos (`reminder_targets`): cada destino es un canal (`whatsapp`, `email`, ...) y una dirección dentro de ese canal. Así un mismo recordatorio puede salir por WhatsApp y por email a la vez.
 
-Al arrancar la app se levanta un `ReminderScheduler` en segundo plano. Cada minuto busca los destinos de recordatorios vencidos que todavía no se enviaron, los manda con el canal correspondiente y marca como enviados (`sent_at`) los que salieron bien. Los que fallan quedan pendientes y se reintentan en la próxima pasada. Si un destino usa un canal que no está configurado, se saltea.
+Al arrancar la app se levanta un `ReminderScheduler` en segundo plano para los canales locales, como email. Cada minuto busca los destinos vencidos que todavía no se enviaron y marca como enviados (`sent_at`) los que salieron bien. WhatsApp se programa en el servidor al crear el recordatorio y se omite en este proceso. Los que fallan quedan pendientes y se reintentan en la próxima pasada. Si un destino usa un canal que no está configurado, se saltea.
 
 Cada canal se activa solo cuando está configurado en el `.env`. Si no hay ninguno, el scheduler no arranca.
 
@@ -97,21 +97,35 @@ Los canales se descubren con `ServiceLoader`, así que sumar uno (por ejemplo Te
 
 ### WhatsApp
 
-Usa WhatsPlay (`scripts/send_whatsapp.py`). Se activa con:
+Se programa en Truello-Api al crear el recordatorio. Configurar en `Trullo/.env`:
 
-```
-WHATSPLAY_DIR=/ruta/a/whatsapp-skill   # vacío = canal desactivado
-```
-
-Hace falta tener `uv` y la carpeta de WhatsPlay con su `whatsapp_session`. La primera vez hay que vincular el WhatsApp escaneando el QR:
-
-```bash
-cd Trullo
-uv run --project "$WHATSPLAY_DIR" python scripts/send_whatsapp.py \
-  --session "$WHATSPLAY_DIR/whatsapp_session" --login-only
+```dotenv
+WHATSAPP_API_URL=http://31.97.160.86/trullo
+API_KEY=clave-configurada-en-el-servidor
+WHATSAPP_API_ZONE=America/Argentina/Buenos_Aires
 ```
 
-Se abre el navegador, escaneás el QR desde el celular y la sesión queda guardada para los envíos siguientes.
+La URL es la base, sin `/wsp-queues`. Java hace `POST /wsp-queues` con
+`X-API-Key` y los campos `phone`, `tarea`, `fecha` (`dd/MM/yyyy`) y `hora`
+(`HH:mm`). El horario elegido se convierte de la zona del escritorio a la zona
+configurada del servidor. La API admite solamente horarios futuros, con precisión
+de minutos. El worker del servidor envía aunque el escritorio esté cerrado.
+
+No se necesitan Python, uv, WhatsPlay, Chrome ni QR en el escritorio. La cuenta
+emisora y su vinculación quedan en el servidor. La plantilla se administra en
+Truello-Api. El planificador local omite los canales `ScheduledNotifier`, para
+no encolar dos veces el mismo recordatorio. El correo sigue enviándose localmente.
+
+La confirmación de la API significa **programado**, no entregado: no se marca
+`sent_at` al encolar. El ID de cola confirmado se informa en el log; esta versión
+no sincroniza el estado remoto con la base local. Los recordatorios WhatsApp
+anteriores a esta integración no se programan automáticamente en el servidor.
+
+La API actual no permite cancelar ni modificar un envío programado. Eliminar
+un recordatorio (o la tarea asociada) localmente no cancela su envío remoto.
+Si hay timeout o una respuesta ambigua, consultar la cola antes de volver a
+crear el recordatorio: no hay idempotencia en la API y el cliente no reintenta
+el POST automáticamente.
 
 ### Email
 

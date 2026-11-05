@@ -1,16 +1,9 @@
 package com.trullo.notification;
 
-import com.trullo.dao.LabelDAO;
-import com.trullo.dao.ReminderDAO;
-import com.trullo.dao.ReminderTargetDAO;
-import com.trullo.dao.TaskDAO;
-import com.trullo.dao.TaskLabelDAO;
+import com.trullo.core.Container;
 import com.trullo.interfaces.services.ReminderService;
+import com.trullo.interfaces.services.ReminderTargetService;
 import com.trullo.interfaces.services.TaskService;
-import com.trullo.services.ReminderServiceImpl;
-import com.trullo.services.ReminderTargetServiceImpl;
-import com.trullo.services.TaskServiceImpl;
-import io.github.cdimascio.dotenv.Dotenv;
 
 /**
  * Arranca el envío de recordatorios con los canales configurados en el archivo {@code .env}.
@@ -29,16 +22,15 @@ public final class ReminderNotifications {
      *
      * @return el planificador iniciado, o {@code null} si no hay ningún canal configurado
      */
-    public static ReminderScheduler start() {
-        Dotenv env = Dotenv.configure().ignoreIfMissing().load();
-        NotifierRegistry notifiers = NotifierRegistry.fromServiceLoader(env);
+    public static ReminderScheduler start(Container container) {
+        NotifierRegistry notifiers = container.resolve(NotifierRegistry.class);
         if (notifiers.isEmpty()) {
             return null;
         }
-        ReminderService reminderService = new ReminderServiceImpl(new ReminderDAO());
-        TaskService taskService = new TaskServiceImpl(new TaskDAO(), new LabelDAO(), new TaskLabelDAO());
+        ReminderService reminderService = container.resolve(ReminderService.class);
+        TaskService taskService = container.resolve(TaskService.class);
         ReminderScheduler scheduler = new ReminderScheduler(
-                new ReminderTargetServiceImpl(new ReminderTargetDAO(), reminderService),
+                container.resolve(ReminderTargetService.class),
                 new ReminderMessageBuilder(reminderService, taskService),
                 notifiers);
         scheduler.start();

@@ -7,6 +7,9 @@ import com.trullo.interfaces.dao.ReminderTargetDAOInterface;
 import com.trullo.interfaces.services.ReminderService;
 import com.trullo.interfaces.services.ReminderTargetService;
 import com.trullo.model.ReminderTarget;
+import com.trullo.interfaces.services.TaskService;
+import com.trullo.interfaces.notification.ScheduledNotifier;
+import com.trullo.notification.NotifierRegistry;
 import java.util.List;
 
 /**
@@ -18,6 +21,8 @@ import java.util.List;
 public class ReminderTargetServiceImpl implements ReminderTargetService {
     private final ReminderTargetDAOInterface targetDAO;
     private final ReminderService reminderService;
+    private final TaskService taskService;
+    private final NotifierRegistry notifiers;
 
     /**
      * Crea el servicio de destinos de recordatorios.
@@ -26,9 +31,12 @@ public class ReminderTargetServiceImpl implements ReminderTargetService {
      * @param reminderService el servicio de recordatorios, usado para verificar que el
      *                        recordatorio exista antes de agregarle un destino
      */
-    public ReminderTargetServiceImpl(ReminderTargetDAOInterface targetDAO, ReminderService reminderService) {
+    public ReminderTargetServiceImpl(ReminderTargetDAOInterface targetDAO, ReminderService reminderService,
+                                    TaskService taskService, NotifierRegistry notifiers) {
         this.targetDAO = targetDAO;
         this.reminderService = reminderService;
+        this.taskService = taskService;
+        this.notifiers = notifiers;
     }
 
     /**
@@ -39,12 +47,31 @@ public class ReminderTargetServiceImpl implements ReminderTargetService {
      */
     @Override
     public ReminderTarget agregarDestino(Long reminderId, String channel, String address) {
-        reminderService.obtenerPorId(reminderId);
+        var reminder = reminderService.obtenerPorId(reminderId);
+        var notifier = notifiers.find(channel).orElseThrow(() ->
+                new com.trullo.exception.ValidationException("El canal " + channel + " no esta configurado"));
+        notifier.validate(address);
+        String title = notifier instanceof ScheduledNotifier
+                ? taskService.obtenerPorId(reminder.getTaskId()).getTitle() : null;
+        ReminderTarget target = null;
         try {
-            return targetDAO.create(new ReminderTarget(null, reminderId, channel, address, null));
-        } catch (DaoException e) {
-            throw new ServiceException(
-                    "No se pudo agregar el destino al recordatorio con id " + reminderId, e);
+            target = targetDAO.create(new ReminderTarget(null, reminderId, channel, address, null));
+            if (notifier instanceof ScheduledNotifier scheduled) {
+                scheduled.schedule(address, title, reminder.getScheduledAt());
+            }
+            return target;
+        } catch (RuntimeException e) {
+            if (target != null) {
+                try {
+                    targetDAO.delete(target.getId());
+                } catch (RuntimeException cleanup) {
+                    e.addSuppressed(cleanup);
+                }
+            }
+            if (e instanceof DaoException) {
+                throw new ServiceException("No se pudo agregar el destino al recordatorio con id " + reminderId, e);
+            }
+            throw e;
         }
     }
 

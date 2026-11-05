@@ -5,7 +5,7 @@ import com.trullo.controller.ReminderTargetController;
 import com.trullo.model.Reminder;
 import com.trullo.model.Task;
 import com.trullo.notification.email.EmailNotifier;
-import com.trullo.notification.whatsapp.WhatsAppNotifier;
+import com.trullo.notification.whatsapp.WhatsAppApiNotifier;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -55,6 +55,9 @@ public final class NewReminderDialog extends BaseDialog {
     private final JPanel emailRow;
     // Recordatorio creado, para devolverlo a CalendarScreen.
     private Reminder createdReminder;
+    private boolean saving;
+    private final JButton createButton;
+    private final JButton cancelButton;
 
     /**
      * Arma el formulario: fecha, tarea, hora, canal y destino (teléfono y/o email).
@@ -113,8 +116,8 @@ public final class NewReminderDialog extends BaseDialog {
 
         // Botones Cancelar / Crear recordatorio.
         JPanel footer = formFooter();
-        JButton cancelButton = secondaryAction("Cancelar");
-        JButton createButton = primaryAction("Crear recordatorio");
+        cancelButton = secondaryAction("Cancelar");
+        createButton = primaryAction("Crear recordatorio");
         cancelButton.addActionListener(actionEvent -> dispose());
         createButton.addActionListener(actionEvent -> createReminder(
                 channelComboBox.getSelectedIndex()
@@ -285,21 +288,54 @@ public final class NewReminderDialog extends BaseDialog {
      * se envía por ese canal). Si un destino falla, deshace el recordatorio y muestra el error.
      */
     private void saveReminder(Reminder reminder, String phone, String email) {
-        Reminder savedReminder = null;
-        try {
-            savedReminder = reminderController.create(reminder);
-            if (phone != null) {
-                reminderTargetController.agregarDestino(savedReminder.getId(), WhatsAppNotifier.CHANNEL, phone);
+        if (saving) return;
+        saving = true;
+        createButton.setEnabled(false);
+        cancelButton.setEnabled(false);
+        createButton.setText("Programando...");
+        new javax.swing.SwingWorker<Reminder, Void>() {
+            @Override
+            protected Reminder doInBackground() {
+                Reminder saved = null;
+                try {
+                    saved = reminderController.create(reminder);
+                    // Crear primero los destinos locales; la solicitud remota va al final.
+                    if (email != null) {
+                        reminderTargetController.agregarDestino(saved.getId(), EmailNotifier.CHANNEL, email);
+                    }
+                    if (phone != null) {
+                        reminderTargetController.agregarDestino(saved.getId(), WhatsAppApiNotifier.CHANNEL, phone);
+                    }
+                    return saved;
+                } catch (RuntimeException exception) {
+                    discardReminder(saved, exception);
+                    throw exception;
+                }
             }
-            if (email != null) {
-                reminderTargetController.agregarDestino(savedReminder.getId(), EmailNotifier.CHANNEL, email);
+
+            @Override
+            protected void done() {
+                saving = false;
+                createButton.setEnabled(true);
+                cancelButton.setEnabled(true);
+                createButton.setText("Crear recordatorio");
+                try {
+                    createdReminder = get();
+                    dispose();
+                } catch (java.util.concurrent.ExecutionException exception) {
+                    UiKit.showError(NewReminderDialog.this, "No se pudo crear el recordatorio", exception.getCause());
+                } catch (InterruptedException exception) {
+                    Thread.currentThread().interrupt();
+                    UiKit.showError(NewReminderDialog.this, "Se interrumpio la programacion", exception);
+                }
             }
-            createdReminder = savedReminder;
-            dispose();
-        } catch (RuntimeException exception) {
-            discardReminder(savedReminder, exception);
-            UiKit.showError(this, "No se pudo crear el recordatorio", exception);
-        }
+        }.execute();
+    }
+
+    @Override
+    public void dispose() {
+        // No cerrar mientras el servidor puede estar aceptando el recordatorio.
+        if (!saving) super.dispose();
     }
 
     /**

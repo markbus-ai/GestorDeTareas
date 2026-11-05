@@ -4,7 +4,7 @@ import com.trullo.model.Reminder;
 import com.trullo.model.ReminderTarget;
 import com.trullo.model.Task;
 import com.trullo.notification.email.EmailNotifier;
-import com.trullo.notification.whatsapp.WhatsAppNotifier;
+import com.trullo.notification.whatsapp.WhatsAppApiNotifier;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -101,7 +101,7 @@ public final class ReminderCard extends RoundedPanel {
         }
         return targets.stream()
                 .map(target -> switch (target.getChannel()) {
-                    case WhatsAppNotifier.CHANNEL -> "WhatsApp";
+                    case WhatsAppApiNotifier.CHANNEL -> "WhatsApp";
                     case EmailNotifier.CHANNEL -> "Correo electrónico";
                     default -> target.getChannel();
                 })

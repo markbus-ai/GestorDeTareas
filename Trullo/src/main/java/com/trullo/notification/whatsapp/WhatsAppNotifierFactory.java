@@ -3,28 +3,23 @@ package com.trullo.notification.whatsapp;
 import com.trullo.interfaces.notification.Notifier;
 import com.trullo.interfaces.notification.NotifierFactory;
 import io.github.cdimascio.dotenv.Dotenv;
-import java.nio.file.Path;
+import java.time.ZoneId;
 import java.util.Optional;
 
-/**
- * Crea el canal de WhatsApp cuando {@code WHATSPLAY_DIR} está configurado.
- *
- * <p>{@code WHATSPLAY_DIR} es la carpeta de WhatsPlay, con su proyecto {@code uv} y su
- * {@code whatsapp_session}. Si está vacía, el canal queda desactivado.
- */
+/** Activa WhatsApp cuando están configuradas la URL y la clave de Truello-Api. */
 public class WhatsAppNotifierFactory implements NotifierFactory {
-    private static final String WHATSPLAY_DIR = "WHATSPLAY_DIR";
-    private static final Path SEND_SCRIPT = Path.of("scripts", "send_whatsapp.py");
 
     /**
      * {@inheritDoc}
      */
     @Override
     public Optional<Notifier> create(Dotenv config) {
-        String whatsplayDir = config.get(WHATSPLAY_DIR, "").trim();
-        if (whatsplayDir.isEmpty()) {
+        String url = config.get("WHATSAPP_API_URL", "").trim();
+        String key = config.get("API_KEY", "").trim();
+        if (url.isEmpty() || key.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(WhatsAppNotifier.forDirectory(Path.of(whatsplayDir), SEND_SCRIPT));
+        return Optional.of(new WhatsAppApiNotifier(url, key,
+                ZoneId.of(config.get("WHATSAPP_API_ZONE", "America/Argentina/Buenos_Aires"))));
     }
 }

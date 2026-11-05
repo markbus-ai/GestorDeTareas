@@ -5,6 +5,7 @@ import com.trullo.exception.NotificationException;
 import com.trullo.exception.ServiceException;
 import com.trullo.exception.ValidationException;
 import com.trullo.interfaces.notification.Notifier;
+import com.trullo.interfaces.notification.ScheduledNotifier;
 import com.trullo.interfaces.services.ReminderTargetService;
 import com.trullo.model.ReminderTarget;
 import org.slf4j.Logger;
@@ -88,6 +89,10 @@ public class ReminderScheduler {
 
     private boolean trySend(ReminderTarget target) {
         Optional<Notifier> notifier = notifiers.find(target.getChannel());
+        if (notifier.orElse(null) instanceof ScheduledNotifier) {
+            // La API ya recibió el horario al crear el destino. No volver a encolarlo.
+            return false;
+        }
         if (notifier.isEmpty()) {
             LOGGER.warn("El canal {} no está configurado; se saltea el destino {}",
                     target.getChannel(), target.getId());

@@ -66,7 +66,9 @@ public final class ServiceModule implements Module {
             ReminderTargetService.class,
             () -> new ReminderTargetServiceImpl(
                 container.resolve(ReminderTargetDAOInterface.class),
-                container.resolve(ReminderService.class)
+                container.resolve(ReminderService.class),
+                container.resolve(TaskService.class),
+                container.resolve(NotifierRegistry.class)
             )
         );
 

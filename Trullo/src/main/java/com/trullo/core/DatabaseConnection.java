@@ -29,7 +29,7 @@ public class DatabaseConnection {
     /**
      * Carga las variables de entrono desde el .env manejado por Dotenv.
      */
-    private static final Dotenv dotenv = Dotenv.load();
+    private static final Dotenv dotenv = AppConfig.load();
     
     /**
      * Instancia única del gestor de conexiones.

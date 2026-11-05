@@ -4,5 +4,3 @@ CREATE TYPE task_status AS ENUM ('PENDIENTE', 'EN_PROGRESO', 'COMPLETADA', 'ATRA
 
 CREATE TYPE task_priority AS ENUM ('BAJA', 'MEDIA', 'ALTA', 'URGENTE');
 
-CREATE TYPE notification_channel AS ENUM ('WHATSAPP', 'EMAIL', 'AMBOS');
-

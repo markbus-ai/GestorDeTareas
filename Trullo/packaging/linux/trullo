@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+TRULLO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$TRULLO_ROOT/setup/launch.sh" "$@"

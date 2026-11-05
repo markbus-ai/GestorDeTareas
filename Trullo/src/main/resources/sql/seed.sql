@@ -3,7 +3,7 @@
 -- Usa fechas relativas a CURRENT_DATE para poder probar findOverdue y findDueSoon
 
 -- Limpieza (orden por FKs)
-TRUNCATE TABLE task_label, reminders, notes, tasks, labels, projects RESTART IDENTITY CASCADE;
+TRUNCATE TABLE task_label, reminder_targets, reminders, notes, tasks, labels, projects RESTART IDENTITY CASCADE;
 
 -- Proyectos
 INSERT INTO projects (name, description, status, due_date) VALUES
@@ -40,14 +40,26 @@ JOIN labels l ON l.name = CASE
 END;
 
 -- Reminders (1 pendiente vencido, 1 pendiente futuro, 1 ya enviado)
-INSERT INTO reminders (task_id, scheduled_at, channel, target_phone, target_email, sent)
-SELECT t.id, (CURRENT_DATE + f.d)::timestamp, f.ch, f.ph, f.em, f.s
+INSERT INTO reminders (task_id, scheduled_at)
+SELECT t.id, (CURRENT_DATE + f.d)::timestamp
 FROM tasks t
 JOIN (VALUES
-    ('Pagar impuestos',   -1, 'EMAIL',     NULL,          'user@ejemplo.com', false),
-    ('Terminar informe',   1, 'WHATSAPP',  '+5491100000', NULL,               false),
-    ('Configurar CI',     -2, 'AMBOS',     '+5491100000', 'user@ejemplo.com', true)
-) AS f(title, d, ch, ph, em, s) ON t.title = f.title;
+    ('Pagar impuestos',   -1),
+    ('Terminar informe',   1),
+    ('Configurar CI',     -2)
+) AS f(title, d) ON t.title = f.title;
+
+-- Destinos de cada reminder (un destino por canal; el ya enviado tiene sent_at)
+INSERT INTO reminder_targets (reminder_id, channel, address, sent_at)
+SELECT r.id, f.ch, f.addr, f.sent_at
+FROM reminders r
+JOIN tasks t ON t.id = r.task_id
+JOIN (VALUES
+    ('Pagar impuestos',  'email',    'user@ejemplo.com', NULL::timestamp),
+    ('Terminar informe', 'whatsapp', '+5491100000',      NULL::timestamp),
+    ('Configurar CI',    'whatsapp', '+5491100000',      (CURRENT_DATE - 2)::timestamp),
+    ('Configurar CI',    'email',    'user@ejemplo.com', (CURRENT_DATE - 2)::timestamp)
+) AS f(title, ch, addr, sent_at) ON t.title = f.title;
 
 -- Notas
 INSERT INTO notes (title, content) VALUES

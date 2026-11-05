@@ -1,6 +1,10 @@
 package com.trullo.frontend;
 
+import com.trullo.core.ErrorReporter;
+
+import com.trullo.controller.ProyectoController;
 import com.trullo.controller.TaskController;
+import com.trullo.model.Proyecto;
 import com.trullo.model.Task;
 import com.trullo.model.TaskStatus;
 
@@ -30,6 +34,8 @@ public final class TasksScreen extends JPanel implements RefreshableScreen {
 
     // Controlador que habla con el backend de tareas.
     private final TaskController taskController;
+    // Controlador de proyectos, para poder asignarlos a las tareas.
+    private final ProyectoController proyectoController;
     // Panel donde se van agregando las TaskCard.
     private final JPanel taskListPanel;
     private final FilterChip allFilterChip;
@@ -38,14 +44,16 @@ public final class TasksScreen extends JPanel implements RefreshableScreen {
 
     // Última lista leída de la base y filtro activo.
     private final List<Task> tasks = new ArrayList<>();
+    private final List<Proyecto> projects = new ArrayList<>();
     private TaskFilter currentFilter = TaskFilter.ALL;
     private String loadErrorMessage;
 
     /**
      * Arma el encabezado, los filtros, la lista scrolleable y el FAB de creación.
      */
-    public TasksScreen(TaskController taskController) {
+    public TasksScreen(TaskController taskController, ProyectoController proyectoController) {
         this.taskController = taskController;
+        this.proyectoController = proyectoController;
 
         setLayout(new BorderLayout());
         setOpaque(false);
@@ -139,15 +147,19 @@ public final class TasksScreen extends JPanel implements RefreshableScreen {
     }
 
     /**
-     * Pide todas las tareas al TaskController y guarda el error si la lectura falla.
+     * Pide las tareas y los proyectos a sus controladores y guarda el error si la lectura falla.
      */
     private void loadTasks() {
         try {
+            List<Task> loadedTasks = taskController.findAll();
+            List<Proyecto> loadedProjects = proyectoController.findAll();
             tasks.clear();
-            tasks.addAll(taskController.findAll());
+            tasks.addAll(loadedTasks);
+            projects.clear();
+            projects.addAll(loadedProjects);
             loadErrorMessage = null;
         } catch (RuntimeException exception) {
-            loadErrorMessage = exception.getMessage();
+            loadErrorMessage = ErrorReporter.report("No se pudieron cargar las tareas y proyectos.", exception);
         }
         refreshList();
     }
@@ -156,7 +168,7 @@ public final class TasksScreen extends JPanel implements RefreshableScreen {
      * Abre el diálogo de creación y, si devuelve una tarea, la agrega y vuelve al filtro "Todas".
      */
     private void openNewTaskDialog() {
-        Optional<Task> createdTask = NewTaskDialog.open(this, taskController);
+        Optional<Task> createdTask = NewTaskDialog.open(this, taskController, projects);
         createdTask.ifPresent(task -> {
             tasks.add(task);
             currentFilter = TaskFilter.ALL;
@@ -196,7 +208,7 @@ public final class TasksScreen extends JPanel implements RefreshableScreen {
             } else {
                 // Una tarjeta por tarea, con un pequeño espacio entre ellas.
                 for (Task task : visibleTasks) {
-                    taskListPanel.add(new TaskCard(task, taskController, this::refreshList));
+                    taskListPanel.add(new TaskCard(task, projects, taskController, this::refreshList));
                     taskListPanel.add(javax.swing.Box.createVerticalStrut(8));
                 }
             }

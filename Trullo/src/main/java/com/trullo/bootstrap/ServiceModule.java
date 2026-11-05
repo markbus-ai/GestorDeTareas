@@ -3,6 +3,7 @@ package com.trullo.bootstrap;
 import com.trullo.core.Container;
 import com.trullo.interfaces.dao.LabelDAOInterface;
 import com.trullo.interfaces.dao.ReminderDAOInterface;
+import com.trullo.interfaces.dao.ReminderTargetDAOInterface;
 import com.trullo.interfaces.dao.TaskDAOInterface;
 import com.trullo.interfaces.dao.TaskLabelDAOInterface;
 import com.trullo.interfaces.dao.ProjectDAOInterface;
@@ -12,11 +13,15 @@ import com.trullo.interfaces.services.TaskService;
 import com.trullo.interfaces.services.NoteService;
 import com.trullo.interfaces.services.ProyectoService;
 import com.trullo.interfaces.services.ReminderService;
+import com.trullo.interfaces.services.ReminderTargetService;
+import com.trullo.notification.NotifierRegistry;
 import com.trullo.services.LabelServiceImpl;
 import com.trullo.services.TaskServiceImpl;
 import com.trullo.services.NoteServiceImpl;
 import com.trullo.services.ProyectoServiceImpl;
 import com.trullo.services.ReminderServiceImpl;
+import com.trullo.services.ReminderTargetServiceImpl;
+import io.github.cdimascio.dotenv.Dotenv;
 
 /**
  * Registra los servicios de negocio como singletons.
@@ -54,6 +59,21 @@ public final class ServiceModule implements Module {
             ReminderService.class,
             () -> new ReminderServiceImpl(
                 container.resolve(ReminderDAOInterface.class)
+            )
+        );
+
+        container.registerSingleton(
+            ReminderTargetService.class,
+            () -> new ReminderTargetServiceImpl(
+                container.resolve(ReminderTargetDAOInterface.class),
+                container.resolve(ReminderService.class)
+            )
+        );
+
+        container.registerSingleton(
+            NotifierRegistry.class,
+            () -> NotifierRegistry.fromServiceLoader(
+                com.trullo.core.AppConfig.load()
             )
         );
 

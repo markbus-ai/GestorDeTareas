@@ -11,6 +11,7 @@ public enum NavigationSection {
      */
     HOME("Inicio", AppIcon.Glyph.HOME),
     TASKS("Mis tareas", AppIcon.Glyph.TASKS),
+    PROJECTS("Proyectos", AppIcon.Glyph.FOLDER),
     CALENDAR("Calendario", AppIcon.Glyph.CALENDAR),
     NOTES("Notas", AppIcon.Glyph.NOTES),
     SETTINGS("Configuración", AppIcon.Glyph.SETTINGS);

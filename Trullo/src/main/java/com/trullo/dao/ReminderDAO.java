@@ -2,7 +2,6 @@ package com.trullo.dao;
 
 import com.trullo.core.DatabaseConnection;
 import com.trullo.exception.DaoException;
-import com.trullo.model.NotificationChannel;
 import com.trullo.model.Reminder;
 import com.trullo.interfaces.dao.ReminderDAOInterface;
 
@@ -15,15 +14,11 @@ public class ReminderDAO implements ReminderDAOInterface {
 
     @Override
     public Reminder create(Reminder reminder) {
-        String sql = "INSERT INTO reminders (task_id, scheduled_at, channel, target_phone, target_email, sent) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO reminders (task_id, scheduled_at) VALUES (?, ?)";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, reminder.getTaskId());
             stmt.setTimestamp(2, Timestamp.valueOf(reminder.getScheduledAt()));
-            stmt.setString(3, reminder.getChannel().name());
-            stmt.setString(4, reminder.getTargetPhone());
-            stmt.setString(5, reminder.getTargetEmail());
-            stmt.setBoolean(6, reminder.isSent());
             stmt.executeUpdate();
 
             try (ResultSet rs = stmt.getGeneratedKeys()) {
@@ -39,16 +34,12 @@ public class ReminderDAO implements ReminderDAOInterface {
 
     @Override
     public Reminder update(Reminder reminder) {
-        String sql = "UPDATE reminders SET task_id = ?, scheduled_at = ?, channel = ?, target_phone = ?, target_email = ?, sent = ? WHERE id = ?";
+        String sql = "UPDATE reminders SET task_id = ?, scheduled_at = ? WHERE id = ?";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, reminder.getTaskId());
             stmt.setTimestamp(2, Timestamp.valueOf(reminder.getScheduledAt()));
-            stmt.setString(3, reminder.getChannel().name());
-            stmt.setString(4, reminder.getTargetPhone());
-            stmt.setString(5, reminder.getTargetEmail());
-            stmt.setBoolean(6, reminder.isSent());
-            stmt.setLong(7, reminder.getId());
+            stmt.setLong(3, reminder.getId());
             stmt.executeUpdate();
             return reminder;
         } catch (SQLException e) {
@@ -117,30 +108,10 @@ public class ReminderDAO implements ReminderDAOInterface {
         }
     }
 
-    @Override
-    public List<Reminder> findPending() {
-        String sql = "SELECT * FROM reminders WHERE sent = false AND scheduled_at <= NOW()";
-        List<Reminder> reminders = new ArrayList<>();
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                reminders.add(mapRow(rs));
-            }
-            return reminders;
-        } catch (SQLException e) {
-            throw DaoException.from("Error al buscar recordatorios pendientes", e);
-        }
-    }
-
     private Reminder mapRow(ResultSet rs) throws SQLException {
         Long id = rs.getLong("id");
         Long taskId = rs.getLong("task_id");
         LocalDateTime scheduledAt = rs.getTimestamp("scheduled_at").toLocalDateTime();
-        NotificationChannel channel = NotificationChannel.valueOf(rs.getString("channel"));
-        String targetPhone = rs.getString("target_phone");
-        String targetEmail = rs.getString("target_email");
-        boolean sent = rs.getBoolean("sent");
-        return new Reminder(id, taskId, scheduledAt, channel, targetPhone, targetEmail, sent);
+        return new Reminder(id, taskId, scheduledAt);
     }
 }

@@ -3,24 +3,20 @@ package com.trullo.model;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * Recordatorio de una tarea programado para una fecha y hora.
+ *
+ * <p>Los canales y direcciones a los que se envía viven en {@link ReminderTarget}.
+ */
 public class Reminder {
     private Long id;
     private Long taskId;
     private LocalDateTime scheduledAt;
-    private NotificationChannel channel;
-    private String targetPhone;
-    private String targetEmail;
-    private boolean sent;
 
-    public Reminder(Long id, Long taskId, LocalDateTime scheduledAt,
-                    NotificationChannel channel, String targetPhone, String targetEmail, boolean sent) {
+    public Reminder(Long id, Long taskId, LocalDateTime scheduledAt) {
         this.id = id;
         this.taskId = taskId;
         this.scheduledAt = scheduledAt;
-        this.channel = channel;
-        this.targetPhone = targetPhone;
-        this.targetEmail = targetEmail;
-        this.sent = sent;
     }
 
     public Long getId() {
@@ -47,38 +43,6 @@ public class Reminder {
         this.scheduledAt = scheduledAt;
     }
 
-    public NotificationChannel getChannel() {
-        return channel;
-    }
-
-    public void setChannel(NotificationChannel channel) {
-        this.channel = channel;
-    }
-
-    public String getTargetPhone() {
-        return targetPhone;
-    }
-
-    public void setTargetPhone(String targetPhone) {
-        this.targetPhone = targetPhone;
-    }
-
-    public String getTargetEmail() {
-        return targetEmail;
-    }
-
-    public void setTargetEmail(String targetEmail) {
-        this.targetEmail = targetEmail;
-    }
-
-    public boolean isSent() {
-        return sent;
-    }
-
-    public void setSent(boolean sent) {
-        this.sent = sent;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -102,10 +66,6 @@ public class Reminder {
                 "id=" + id +
                 ", taskId=" + taskId +
                 ", scheduledAt=" + scheduledAt +
-                ", channel=" + channel +
-                ", targetPhone='" + targetPhone + '\'' +
-                ", targetEmail='" + targetEmail + '\'' +
-                ", sent=" + sent +
                 '}';
     }
 }

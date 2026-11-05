@@ -1,5 +1,9 @@
 package com.trullo.frontend;
 
+import com.trullo.model.EstadoProyecto;
+import com.trullo.core.ErrorReporter;
+import com.trullo.model.Proyecto;
+
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -35,6 +39,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -329,7 +335,15 @@ public final class UiKit {
      * Combo box de texto con renderer propio para que las opciones respeten los colores del tema.
      */
     public static JComboBox<String> comboBox(String[] options) {
-        JComboBox<String> comboBox = new JComboBox<>(options);
+        return comboBox(options, option -> option);
+    }
+
+    /**
+     * Combo box de cualquier tipo: cada opción se muestra con el texto que devuelve labelOf.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> JComboBox<T> comboBox(T[] options, Function<T, String> labelOf) {
+        JComboBox<T> comboBox = new JComboBox<>(options);
         comboBox.setRenderer(new DefaultListCellRenderer() {
             /**
              * Aplica fuente, padding y colores del tema a cada opción del combo.
@@ -347,6 +361,7 @@ public final class UiKit {
                         isSelected,
                         cellHasFocus
                 );
+                label.setText(value == null ? "" : labelOf.apply((T) value));
                 label.setFont(font(Font.PLAIN, 13));
                 label.setBorder(new EmptyBorder(4, 10, 4, 10));
                 label.setBackground(isSelected ? Theme.accent() : Theme.input());
@@ -360,9 +375,35 @@ public final class UiKit {
     }
 
     /**
+     * Combo de proyectos con una primera opción "Sin proyecto" y el proyecto indicado seleccionado.
+     */
+    public static JComboBox<Proyecto> projectComboBox(List<Proyecto> projects, Long selectedProjectId) {
+        Proyecto[] options = new Proyecto[projects.size() + 1];
+        options[0] = new Proyecto(null, "Sin proyecto", null, EstadoProyecto.ACTIVO, null);
+        for (int index = 0; index < projects.size(); index++) {
+            options[index + 1] = projects.get(index);
+        }
+
+        JComboBox<Proyecto> comboBox = comboBox(options, Proyecto::getName);
+        for (Proyecto project : projects) {
+            if (project.getId().equals(selectedProjectId)) {
+                comboBox.setSelectedItem(project);
+            }
+        }
+        return comboBox;
+    }
+
+    /**
+     * Devuelve el id del proyecto elegido, o null si se eligió "Sin proyecto".
+     */
+    public static Long selectedProjectId(JComboBox<Proyecto> comboBox) {
+        return ((Proyecto) comboBox.getSelectedItem()).getId();
+    }
+
+    /**
      * Aplica colores y borde al combo cuando se crea o cambia el tema.
      */
-    private static void styleComboBox(JComboBox<String> comboBox) {
+    private static void styleComboBox(JComboBox<?> comboBox) {
         comboBox.setFont(font(Font.PLAIN, 14));
         comboBox.setFocusable(false);
         comboBox.setBackground(Theme.input());
@@ -464,10 +505,7 @@ public final class UiKit {
      * Muestra un diálogo de error con el mensaje de la excepción recibida.
      */
     public static void showError(Component parent, String title, Throwable error) {
-        String message = error == null ? "Error desconocido" : error.getMessage();
-        if (message == null || message.isBlank()) {
-            message = error == null ? "Error desconocido" : error.getClass().getSimpleName();
-        }
+        String message = ErrorReporter.report(title, error);
         JOptionPane.showMessageDialog(parent, message, title, JOptionPane.ERROR_MESSAGE);
     }
 

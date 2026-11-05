@@ -35,11 +35,15 @@ CREATE TABLE task_label (
 CREATE TABLE reminders (
     id BIGSERIAL PRIMARY KEY,
     task_id BIGINT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-    scheduled_at TIMESTAMP NOT NULL,
-    channel notification_channel NOT NULL, -- WHATSAPP | EMAIL | AMBOS
-    target_phone VARCHAR(20),
-    target_email VARCHAR(100),
-    sent BOOLEAN NOT NULL DEFAULT FALSE
+    scheduled_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE reminder_targets (
+    id BIGSERIAL PRIMARY KEY,
+    reminder_id BIGINT NOT NULL REFERENCES reminders(id) ON DELETE CASCADE,
+    channel VARCHAR(30) NOT NULL,   -- id del canal, ej. whatsapp | email
+    address VARCHAR(255) NOT NULL,
+    sent_at TIMESTAMP
 );
 
 CREATE TABLE notes (

@@ -77,6 +77,14 @@ public interface TaskService {
     void establecerFechaLimite(Long id, LocalDate fechaLimite);
 
     /**
+     * Asigna una tarea a un proyecto o la deja sin proyecto.
+     *
+     * @param id el identificador de la tarea
+     * @param projectId el identificador del proyecto, o {@code null} para quitarla del proyecto
+     */
+    void asignarProyecto(Long id, Long projectId);
+
+    /**
      * Lista las tareas que pertenecen a un proyecto.
      *
      * @param projectId el identificador del proyecto

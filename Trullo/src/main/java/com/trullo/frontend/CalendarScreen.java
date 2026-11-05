@@ -1,8 +1,12 @@
 package com.trullo.frontend;
 
+import com.trullo.core.ErrorReporter;
+
 import com.trullo.controller.ReminderController;
+import com.trullo.controller.ReminderTargetController;
 import com.trullo.controller.TaskController;
 import com.trullo.model.Reminder;
+import com.trullo.model.ReminderTarget;
 import com.trullo.model.Task;
 
 import javax.swing.BorderFactory;
@@ -29,6 +33,7 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
 
     // Controladores: recordatorios para el panel derecho y tareas para vincular cada recordatorio.
     private final ReminderController reminderController;
+    private final ReminderTargetController reminderTargetController;
     private final TaskController taskController;
     private final MonthlyCalendarView calendarView;
     private final RemindersPanel remindersPanel;
@@ -41,8 +46,11 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
     /**
      * Arma las dos tarjetas (calendario y recordatorios) y conecta sus callbacks.
      */
-    public CalendarScreen(ReminderController reminderController, TaskController taskController) {
+    public CalendarScreen(ReminderController reminderController,
+                          ReminderTargetController reminderTargetController,
+                          TaskController taskController) {
         this.reminderController = reminderController;
+        this.reminderTargetController = reminderTargetController;
         this.taskController = taskController;
 
         setLayout(new BorderLayout());
@@ -138,7 +146,8 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
             calendarView.setReminderDates(reminderDates);
             showRemindersForDate(calendarView.getSelectedDate());
         } catch (RuntimeException exception) {
-            remindersPanel.showError("No se pudieron cargar los datos del calendario.");
+            remindersPanel.showError(ErrorReporter.report(
+                    "No se pudieron cargar los datos del calendario.", exception));
             calendarView.setReminderDates(Set.of());
         }
     }
@@ -148,12 +157,25 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
      * elegido y se los pasa al panel derecho junto con el mapa de tareas.
      */
     private void showRemindersForDate(LocalDate date) {
-        remindersPanel.showReminders(
-                date,
-                reminders,
-                tasksById,
-                this::deleteReminder
-        );
+        try {
+            remindersPanel.showReminders(
+                    date,
+                    reminders,
+                    tasksById,
+                    this::targetsOf,
+                    this::deleteReminder
+            );
+        } catch (RuntimeException exception) {
+            remindersPanel.showError(ErrorReporter.report(
+                    "No se pudieron cargar los destinos de los recordatorios.", exception));
+        }
+    }
+
+    /**
+     * Busca los destinos; el error se muestra en el panel de recordatorios.
+     */
+    private List<ReminderTarget> targetsOf(Reminder reminder) {
+        return reminderTargetController.listarDestinos(reminder.getId());
     }
 
     /**
@@ -172,6 +194,7 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
         Optional<Reminder> createdReminder = NewReminderDialog.open(
                 this,
                 reminderController,
+                reminderTargetController,
                 calendarView.getSelectedDate(),
                 tasks
         );

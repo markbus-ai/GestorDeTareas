@@ -37,7 +37,7 @@ fi
 APPLICATIONS="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
 [[ "$APPLICATIONS" = /* ]] || APPLICATIONS="$HOME/.local/share/applications"
 mkdir -p -- "$APPLICATIONS"
-LAUNCHER="${DESTINATION//\\/\\\\}/setup/launch.sh"
+LAUNCHER="${DESTINATION//\\/\\\\}/bin/trullo"
 LAUNCHER="${LAUNCHER//\"/\\\"}"
 LAUNCHER="${LAUNCHER//%/%%}"
 printf '[Desktop Entry]\nType=Application\nName=Trullo\nComment=Gestor de tareas\nExec="%s"\nTerminal=false\nCategories=Office;\n' "$LAUNCHER" > "$APPLICATIONS/trullo.desktop"

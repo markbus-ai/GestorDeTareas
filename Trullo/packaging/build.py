@@ -19,6 +19,16 @@ def run(*command):
     subprocess.run([str(item) for item in command], cwd=ROOT, check=True)
 
 
+def install_linux_launcher(bundle):
+    # Mantener el launcher Java junto a su configuración de jpackage, pero interno.
+    (bundle / "bin/Trullo").rename(bundle / "bin/Trullo-java")
+    (bundle / "lib/app/Trullo.cfg").rename(bundle / "lib/app/Trullo-java.cfg")
+    for name in ["Trullo", "trullo"]:
+        destination = bundle / "bin" / name
+        shutil.copy2(ROOT / "packaging/linux/trullo", destination)
+        destination.chmod(0o755)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--postgres-dir", type=Path, help="Windows: ZIP oficial extraido, raiz con bin/lib/share")
@@ -75,7 +85,7 @@ def main():
                     "RuntimeProbe"], cwd=probe, env=probe_env, check=True)
     setup = bundle / "setup"
     setup.mkdir()
-    shutil.copy2(ROOT / "packaging/README.md", bundle / "README.md")
+    shutil.copy2(ROOT / "packaging/README-user.md", bundle / "README.md")
     shutil.copy2(ROOT / "packaging/bootstrap.py", setup)
     shutil.copy2(ROOT / "scripts/send_whatsapp.py", setup)
     copy_sender(sender_session, args.sender_env, setup / "sender")
@@ -98,6 +108,7 @@ def main():
         shutil.copy2(ROOT / "packaging/linux/install.sh", bundle / "install.sh")
         (setup / "launch.sh").chmod(0o755)
         (bundle / "install.sh").chmod(0o755)
+        install_linux_launcher(bundle)
         with tarfile.open(dist / f"Trullo-{VERSION}-linux-x64.tar.gz", "w:gz") as archive:
             archive.add(bundle, arcname="Trullo")
     checksums = []

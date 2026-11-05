@@ -125,6 +125,11 @@ de distribuirlo. Si falla, el administrador debe preparar una sesión de la mism
 cuenta en ese entorno; el usuario final no recibe un flujo de vinculación.
 El programa debe permanecer abierto para enviar los recordatorios.
 
+En Linux también se puede abrir con `./bin/trullo` (o `./bin/Trullo`) desde
+la carpeta del paquete. Ambos ejecutables públicos inician la preparación y
+PostgreSQL antes de abrir la interfaz, y detienen la base al cerrar la aplicación.
+`bin/Trullo-java` es el launcher interno y no debe abrirse directamente.
+
 Para reparación o vinculación manual:
 
 ```sh

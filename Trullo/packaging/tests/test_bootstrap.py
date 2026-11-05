@@ -70,6 +70,55 @@ class SetupTest(unittest.TestCase):
         with patch.dict(os.environ, {"XDG_CONFIG_HOME": str(self.root / "config"), "XDG_DATA_HOME": str(self.root / "data")}), patch.object(sys, "platform", "linux"):
             self.assertEqual((self.root / "config/trullo", self.root / "data/trullo"), setup.user_paths())
 
+    def test_application_runs_before_database_is_stopped(self):
+        installation = self.root / "application"
+        data = self.root / "data"
+        (data / "postgres").mkdir(parents=True)
+        (data / "postgres/PG_VERSION").write_text("17")
+        events = []
+        def launch(command, **kwargs):
+            events.append("application")
+            executable = "Trullo.exe" if sys.platform == "win32" else "bin/Trullo-java"
+            self.assertEqual([str(installation / executable)], command)
+            self.assertEqual(data, kwargs["cwd"])
+            return 7
+        def prepare(*args):
+            events.append("database-start")
+            return {}
+        with patch.object(sys, "argv", ["bootstrap", "--home", str(installation),
+                "--data-dir", str(data), "--config-dir", str(self.root / "config")]), \
+                patch.dict(os.environ), patch.object(setup, "pg_bin", return_value={"pg_ctl": Path("pg_ctl")}), \
+                patch.object(setup, "prepare_database", side_effect=prepare), \
+                patch.object(setup, "prepare_whatsapp"), patch.object(setup, "prepare_sender"), \
+                patch.object(setup, "write_config"), patch.object(setup.subprocess, "call", side_effect=launch), \
+                patch.object(setup.subprocess, "run", side_effect=lambda *a, **kw: events.append("database-stop")):
+            self.assertEqual(7, setup.main())
+        self.assertEqual(["database-start", "application", "database-stop"], events)
+
+    @unittest.skipIf(sys.platform == "win32", "Launcher Linux")
+    def test_public_linux_executables_route_to_setup(self):
+        with patch.dict(sys.modules), patch.object(sys, "path", [str(ROOT / "packaging")] + sys.path):
+            build_spec = importlib.util.spec_from_file_location("trullo_build", ROOT / "packaging/build.py")
+            build = importlib.util.module_from_spec(build_spec)
+            build_spec.loader.exec_module(build)
+        bundle = self.root / "application with spaces"
+        (bundle / "bin").mkdir(parents=True)
+        (bundle / "lib/app").mkdir(parents=True)
+        (bundle / "setup").mkdir()
+        (bundle / "bin/Trullo").write_text("internal launcher")
+        (bundle / "lib/app/Trullo.cfg").write_text("configuration")
+        launcher = bundle / "setup/launch.sh"
+        launcher.write_text('#!/bin/sh\nprintf "%s\\n" "$@"\nexit 7\n')
+        launcher.chmod(0o755)
+        build.install_linux_launcher(bundle)
+        for name in ["trullo", "Trullo"]:
+            result = subprocess.run([str(bundle / "bin" / name), "argument with spaces"],
+                                    cwd="/tmp", capture_output=True, text=True)
+            self.assertEqual(7, result.returncode)
+            self.assertEqual("argument with spaces\n", result.stdout)
+        self.assertEqual("internal launcher", (bundle / "bin/Trullo-java").read_text())
+        self.assertEqual("configuration", (bundle / "lib/app/Trullo-java.cfg").read_text())
+
 
 @unittest.skipUnless(os.getenv("TRULLO_SETUP_TEST_POSTGRES") == "1", "Opt-in: cluster temporal aislado")
 class PostgresSetupTest(unittest.TestCase):

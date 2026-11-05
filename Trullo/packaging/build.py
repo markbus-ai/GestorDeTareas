@@ -156,7 +156,10 @@ def main():
     for artifact in sorted(dist.iterdir()):
         if artifact.name.endswith((".exe", ".tar.gz")):
             with artifact.open("rb") as stream:
-                checksums.append(hashlib.file_digest(stream, "sha256").hexdigest() + "  " + artifact.name)
+                digest = hashlib.sha256()
+                for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                    digest.update(chunk)
+                checksums.append(digest.hexdigest() + "  " + artifact.name)
     (dist / "SHA256SUMS").write_text("\n".join(checksums) + "\n", encoding="ascii")
     print("Artefactos preparados en", dist)
 

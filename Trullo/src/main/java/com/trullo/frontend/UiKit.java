@@ -1,6 +1,7 @@
 package com.trullo.frontend;
 
 import com.trullo.model.EstadoProyecto;
+import com.trullo.core.ErrorReporter;
 import com.trullo.model.Proyecto;
 
 import javax.swing.BorderFactory;
@@ -504,10 +505,7 @@ public final class UiKit {
      * Muestra un diálogo de error con el mensaje de la excepción recibida.
      */
     public static void showError(Component parent, String title, Throwable error) {
-        String message = error == null ? "Error desconocido" : error.getMessage();
-        if (message == null || message.isBlank()) {
-            message = error == null ? "Error desconocido" : error.getClass().getSimpleName();
-        }
+        String message = ErrorReporter.report(title, error);
         JOptionPane.showMessageDialog(parent, message, title, JOptionPane.ERROR_MESSAGE);
     }
 

@@ -1,5 +1,7 @@
 package com.trullo.frontend;
 
+import com.trullo.core.ErrorReporter;
+
 import com.trullo.controller.NoteController;
 import com.trullo.model.Note;
 
@@ -127,7 +129,7 @@ public final class NotesScreen extends JPanel implements RefreshableScreen {
             notes.addAll(noteController.findAll());
             loadErrorMessage = null;
         } catch (RuntimeException exception) {
-            loadErrorMessage = exception.getMessage();
+            loadErrorMessage = ErrorReporter.report("No se pudieron cargar las notas.", exception);
         }
         applyFilter();
     }

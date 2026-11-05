@@ -7,6 +7,8 @@ import com.trullo.exception.ValidationException;
 import com.trullo.interfaces.notification.Notifier;
 import com.trullo.interfaces.services.ReminderTargetService;
 import com.trullo.model.ReminderTarget;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeUnit;
  * fallan quedan pendientes y se reintentan en la próxima pasada.
  */
 public class ReminderScheduler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReminderScheduler.class);
     private static final long INTERVAL_SECONDS = 60;
 
     private final ReminderTargetService targetService;
@@ -86,8 +89,8 @@ public class ReminderScheduler {
     private boolean trySend(ReminderTarget target) {
         Optional<Notifier> notifier = notifiers.find(target.getChannel());
         if (notifier.isEmpty()) {
-            System.err.println("[recordatorios] el canal " + target.getChannel()
-                    + " no está configurado; se saltea el destino " + target.getId());
+            LOGGER.warn("El canal {} no está configurado; se saltea el destino {}",
+                    target.getChannel(), target.getId());
             return false;
         }
         try {
@@ -97,8 +100,7 @@ public class ReminderScheduler {
             targetService.marcarEnviado(target.getId());
             return true;
         } catch (ValidationException | NotificationException | ServiceException | NotFoundException e) {
-            System.err.println("[recordatorios] no se pudo enviar el destino " + target.getId()
-                    + ": " + e.getMessage());
+            LOGGER.error("No se pudo enviar el destino " + target.getId(), e);
             return false;
         }
     }
@@ -108,7 +110,7 @@ public class ReminderScheduler {
             sendPending();
         } catch (Throwable t) {
             // An uncaught throwable would silently cancel every later run of the schedule.
-            System.err.println("[recordatorios] falló la pasada de envío: " + t);
+            LOGGER.error("Fallo la pasada de envio de recordatorios", t);
         }
     }
 }

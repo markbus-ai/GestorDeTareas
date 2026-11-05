@@ -30,7 +30,7 @@ public final class ReminderNotifications {
      * @return el planificador iniciado, o {@code null} si no hay ningún canal configurado
      */
     public static ReminderScheduler start() {
-        Dotenv env = Dotenv.configure().ignoreIfMissing().load();
+        Dotenv env = com.trullo.core.AppConfig.load();
         NotifierRegistry notifiers = NotifierRegistry.fromServiceLoader(env);
         if (notifiers.isEmpty()) {
             return null;

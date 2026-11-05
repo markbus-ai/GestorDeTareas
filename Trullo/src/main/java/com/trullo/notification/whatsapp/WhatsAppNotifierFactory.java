@@ -14,7 +14,6 @@ import java.util.Optional;
  */
 public class WhatsAppNotifierFactory implements NotifierFactory {
     private static final String WHATSPLAY_DIR = "WHATSPLAY_DIR";
-    private static final Path SEND_SCRIPT = Path.of("scripts", "send_whatsapp.py");
 
     /**
      * {@inheritDoc}
@@ -25,6 +24,7 @@ public class WhatsAppNotifierFactory implements NotifierFactory {
         if (whatsplayDir.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(WhatsAppNotifier.forDirectory(Path.of(whatsplayDir), SEND_SCRIPT));
+        return Optional.of(WhatsAppNotifier.forDirectory(Path.of(whatsplayDir),
+                com.trullo.core.AppConfig.whatsAppScript(), config.get("UV_EXECUTABLE", "uv")));
     }
 }

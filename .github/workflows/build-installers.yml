@@ -1,0 +1,97 @@
+name: Build Trullo installers
+on:
+  workflow_dispatch:
+    inputs:
+      postgres_url:
+        description: URL HTTPS del ZIP oficial EDB de PostgreSQL Windows x64
+        required: true
+        type: string
+      postgres_sha256:
+        description: SHA256 verificado del ZIP PostgreSQL
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.4'
+      - name: Install PostgreSQL test tools
+        run: sudo apt-get update && sudo apt-get install -y postgresql postgresql-client
+      - name: Test isolated setup
+        working-directory: Trullo
+        run: PYTHONDONTWRITEBYTECODE=1 TRULLO_SETUP_TEST_POSTGRES=1 python3 -m unittest discover -s packaging/tests -v
+      - name: Load private Linux sender profile
+        working-directory: Trullo
+        env:
+          TRULLO_SENDER_URL: ${{ secrets.TRULLO_SENDER_LINUX_URL }}
+        run: python3 packaging/fetch_sender.py "$RUNNER_TEMP/sender"
+      - name: Build Linux
+        working-directory: Trullo
+        run: python3 packaging/build.py --sender-session "$RUNNER_TEMP/sender/session" --sender-env "$RUNNER_TEMP/sender/mail.env"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Trullo-linux-x64
+          path: Trullo/target/dist/*.tar.gz
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.4'
+      - name: Download and verify PostgreSQL and Microsoft runtime
+        env:
+          PG_URL: ${{ inputs.postgres_url }}
+          PG_SHA256: ${{ inputs.postgres_sha256 }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (!$env:PG_URL.StartsWith('https://get.enterprisedb.com/postgresql/')) { throw 'Usa el ZIP oficial EDB.' }
+          if ($env:PG_SHA256 -notmatch '^[a-fA-F0-9]{64}$') { throw 'SHA256 invalido.' }
+          Invoke-WebRequest $env:PG_URL -OutFile "$env:RUNNER_TEMP\postgres.zip"
+          if ((Get-FileHash "$env:RUNNER_TEMP\postgres.zip" -Algorithm SHA256).Hash -ne $env:PG_SHA256) { throw 'Checksum PostgreSQL incorrecto.' }
+          Expand-Archive "$env:RUNNER_TEMP\postgres.zip" "$env:RUNNER_TEMP\postgres"
+          Invoke-WebRequest 'https://aka.ms/vs/17/release/vc_redist.x64.exe' -OutFile "$env:RUNNER_TEMP\vc_redist.x64.exe"
+          $signature = Get-AuthenticodeSignature "$env:RUNNER_TEMP\vc_redist.x64.exe"
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft Corporation') { throw 'Firma Microsoft invalida.' }
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Test setup helpers
+        working-directory: Trullo
+        shell: pwsh
+        run: python -m unittest discover -s packaging/tests -v
+      - name: Load private Windows sender profile
+        working-directory: Trullo
+        env:
+          TRULLO_SENDER_URL: ${{ secrets.TRULLO_SENDER_WINDOWS_URL }}
+        shell: pwsh
+        run: python packaging/fetch_sender.py "$env:RUNNER_TEMP\sender"
+      - name: Build Windows EXE
+        working-directory: Trullo
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $initdb = Get-ChildItem "$env:RUNNER_TEMP\postgres" -Filter initdb.exe -Recurse | Select-Object -First 1
+          if (!$initdb) { throw 'ZIP PostgreSQL sin initdb.exe' }
+          python packaging/build.py --sender-session "$env:RUNNER_TEMP\sender\session" --sender-env "$env:RUNNER_TEMP\sender\mail.env" --postgres-dir $initdb.Directory.Parent.FullName --vc-redist "$env:RUNNER_TEMP\vc_redist.x64.exe" --iscc "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Trullo-windows-x64
+          path: Trullo/target/dist/*.exe

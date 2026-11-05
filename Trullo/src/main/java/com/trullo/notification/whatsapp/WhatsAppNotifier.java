@@ -51,7 +51,11 @@ public class WhatsAppNotifier implements Notifier {
      * @return el notificador configurado
      */
     public static WhatsAppNotifier forDirectory(Path whatsplayDir, Path script) {
-        List<String> launcher = List.of("uv", "run", "--project", whatsplayDir.toString(), "python",
+        return forDirectory(whatsplayDir, script, "uv");
+    }
+
+    public static WhatsAppNotifier forDirectory(Path whatsplayDir, Path script, String uvExecutable) {
+        List<String> launcher = List.of(uvExecutable, "run", "--project", whatsplayDir.toString(), "python",
                 script.toAbsolutePath().toString());
         return new WhatsAppNotifier(launcher, whatsplayDir.resolve("whatsapp_session"));
     }

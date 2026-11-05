@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Arma el mensaje que se envía para un destino de recordatorio.
  *
- * <p>El cuerpo nombra la tarea del recordatorio y, si tiene, su fecha de vencimiento. Si el
+ * <p>El cuerpo usa el texto del recordatorio de WhatsApp con el nombre de la tarea. Si el
  * recordatorio no tiene tarea o la tarea ya no existe, usa un texto genérico.
  */
 public class ReminderMessageBuilder {
@@ -58,9 +58,8 @@ public class ReminderMessageBuilder {
                     + "; se usa el mensaje generico", e);
             return DEFAULT_BODY;
         }
-        if (task.getDueDate() == null) {
-            return task.getTitle();
-        }
-        return task.getTitle() + " (vence el " + task.getDueDate() + ")";
+        return "🔔 Recordatorio de Trullo\n\n"
+                + "Tenés pendiente: " + task.getTitle() + "\n\n"
+                + "Un pequeño avance también cuenta. ¡Es momento de darle lugar!";
     }
 }

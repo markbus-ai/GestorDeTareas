@@ -6,11 +6,14 @@ import com.trullo.controller.LabelController;
 import com.trullo.controller.NoteController;
 import com.trullo.controller.ProyectoController;
 import com.trullo.controller.ReminderController;
+import com.trullo.controller.ReminderTargetController;
 import com.trullo.interfaces.services.LabelService;
 import com.trullo.interfaces.services.TaskService;
 import com.trullo.interfaces.services.NoteService;
 import com.trullo.interfaces.services.ProyectoService;
 import com.trullo.interfaces.services.ReminderService;
+import com.trullo.interfaces.services.ReminderTargetService;
+import com.trullo.notification.NotifierRegistry;
 
 /**
  * Registra los controladores como dependencias transitorias.
@@ -60,6 +63,14 @@ public final class ControllerModule implements Module {
             ReminderController.class,
             () -> new ReminderController(
                 container.resolve(ReminderService.class)
+            )
+        );
+
+        container.registerTransient(
+            ReminderTargetController.class,
+            () -> new ReminderTargetController(
+                container.resolve(ReminderTargetService.class),
+                container.resolve(NotifierRegistry.class)
             )
         );
     }

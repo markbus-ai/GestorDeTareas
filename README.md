@@ -9,6 +9,7 @@ Hecha para la facu pero usable posta, no es el tipico gestor feo de consola.
 - **My Tasks** — creas tareas, le pones deadline opcional, filtras por Todas / Pendientes / Completadas. Al marcar como hecha se tacha y a los 1s desaparece.
 - **Calendario** — vista mensual con navegación `< >`, marca hoy y el día seleccionado. Los días con recordatorios muestran puntito naranja. Click en un día → ves/agregas recordatorios a la derecha.
 - **Notas** — cards de colores que se expanden al tocarlas. Buscador arriba que filtra al tipear. Botón `+` verde para crear.
+- **Proyectos** — crear proyectos, cambiar su estado y eliminarlos. Cada tarea se asigna a un proyecto desde su tarjeta o al crearla.
 - **Configuración** — switch de tema (oscuro/claro) con FlatLaf. Todo se actualiza en vivo.
 
 ## 🛠️ Stack

@@ -1,7 +1,9 @@
 package com.trullo.frontend;
 
 import com.trullo.controller.NoteController;
+import com.trullo.controller.ProyectoController;
 import com.trullo.controller.ReminderController;
+import com.trullo.controller.ReminderTargetController;
 import com.trullo.controller.TaskController;
 
 import javax.swing.JFrame;
@@ -46,7 +48,9 @@ public final class MainWindow extends JFrame {
      */
     public MainWindow(TaskController taskController,
                       NoteController noteController,
-                      ReminderController reminderController) {
+                      ReminderController reminderController,
+                      ReminderTargetController reminderTargetController,
+                      ProyectoController proyectoController) {
         super("Trullo · Gestor de tareas personal");
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,10 +70,14 @@ public final class MainWindow extends JFrame {
          * Cada pantalla recibe solo los controladores que realmente necesita.
          */
         registerScreen(NavigationSection.HOME, new WelcomeScreen(this::showSection));
-        registerScreen(NavigationSection.TASKS, new TasksScreen(taskController));
+        registerScreen(NavigationSection.TASKS, new TasksScreen(taskController, proyectoController));
+        registerScreen(
+                NavigationSection.PROJECTS,
+                new ProjectsScreen(proyectoController, taskController)
+        );
         registerScreen(
                 NavigationSection.CALENDAR,
-                new CalendarScreen(reminderController, taskController)
+                new CalendarScreen(reminderController, reminderTargetController, taskController)
         );
         registerScreen(NavigationSection.NOTES, new NotesScreen(noteController));
         registerScreen(NavigationSection.SETTINGS, new SettingsScreen());

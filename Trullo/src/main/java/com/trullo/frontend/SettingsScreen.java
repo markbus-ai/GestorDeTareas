@@ -3,17 +3,13 @@ package com.trullo.frontend;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -31,30 +27,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * Pantalla de configuración: apariencia, vista previa de notificaciones, privacidad y
- * creadores.
+ * Pantalla de configuración: apariencia, privacidad y creadores.
  *
- * <p>Las preferencias que solo afectan a esta aplicación se manejan localmente. La sección de
- * notificaciones es solo una vista previa y nunca envía un mensaje por sí sola.
+ * <p>Las preferencias que solo afectan a esta aplicación se manejan localmente.
  */
 public final class SettingsScreen extends JPanel {
 
-    // Etiquetas de los canales de notificación que se muestran en el combo.
-    private static final String[] CHANNEL_LABELS = {
-            "WhatsApp", "Correo electrónico", "WhatsApp + Correo electrónico"
-    };
-
     private final JLabel themeStateLabel;
-    private final JComboBox<String> channelComboBox;
-    private final JTextField phoneField;
-    private final JTextField emailField;
-    private final JPanel phoneRow;
-    private final JPanel emailRow;
-    private final JTextArea notificationPreviewArea;
 
     /**
      * Construye la pantalla: encabezado, tarjetas de configuración dentro de un scroll y pie con
-     * la versión. También deja conectados los listeners del canal y de la vista previa.
+     * la versión.
      */
     public SettingsScreen() {
         setLayout(new BorderLayout(0, 18));
@@ -72,12 +55,6 @@ public final class SettingsScreen extends JPanel {
 
         // Controles que después se reutilizan en las tarjetas.
         themeStateLabel = UiKit.themedLabel("", Font.PLAIN, 12, Theme::mutedText);
-        channelComboBox = UiKit.comboBox(CHANNEL_LABELS);
-        phoneField = UiKit.textField("+54 9 11 1234-5678");
-        emailField = UiKit.textField("name@example.com");
-        phoneRow = createFieldRow("Teléfono", phoneField);
-        emailRow = createFieldRow("Correo electrónico", emailField);
-        notificationPreviewArea = createTextBlock("", 6);
 
         // Las tarjetas se apilan verticalmente y se adaptan al ancho del scroll.
         ScrollablePanel cardsPanel = new ScrollablePanel(new GridBagLayout());
@@ -94,12 +71,9 @@ public final class SettingsScreen extends JPanel {
         cardsPanel.add(createAppearanceCard(), cardConstraints);
 
         cardConstraints.gridy = 1;
-        cardsPanel.add(createNotificationCard(), cardConstraints);
-
-        cardConstraints.gridy = 2;
         cardsPanel.add(createPrivacyCard(), cardConstraints);
 
-        cardConstraints.gridy = 3;
+        cardConstraints.gridy = 2;
         cardsPanel.add(createCreatorsCard(), cardConstraints);
 
         JScrollPane scrollPane = UiKit.scrollPane(cardsPanel);
@@ -116,13 +90,6 @@ public final class SettingsScreen extends JPanel {
                 Theme::mutedText
         ));
         add(footerPanel, BorderLayout.SOUTH);
-
-        // Listeners de canal y campos de destino.
-        channelComboBox.addActionListener(actionEvent -> updateNotificationTargets());
-        addLivePreviewListener(phoneField);
-        addLivePreviewListener(emailField);
-
-        updateNotificationTargets();
     }
 
     /**
@@ -153,52 +120,6 @@ public final class SettingsScreen extends JPanel {
                 AppIcon.Glyph.MOON,
                 "Apariencia",
                 "Alterná entre la paleta oscura y la clara.",
-                controlPanel
-        );
-    }
-
-    /**
-     * Crea la tarjeta de notificaciones: canal, teléfono/email según el canal y una caja con la
-     * vista previa del mensaje.
-     */
-    private RoundedPanel createNotificationCard() {
-        JPanel controlPanel = new JPanel();
-        controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
-        controlPanel.setOpaque(false);
-
-        channelComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        channelComboBox.setPreferredSize(new Dimension(190, 38));
-        phoneField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        emailField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-
-        controlPanel.add(createFieldRow("Canal", channelComboBox));
-        controlPanel.add(Box.createVerticalStrut(10));
-        controlPanel.add(phoneRow);
-        controlPanel.add(Box.createVerticalStrut(10));
-        controlPanel.add(emailRow);
-        controlPanel.add(Box.createVerticalStrut(14));
-
-        // Caja donde se escribe la vista previa en vivo.
-        RoundedPanel previewBox = new RoundedPanel(
-                new BorderLayout(0, 6),
-                Theme::surfaceAlt,
-                12
-        );
-        previewBox.setBorder(new EmptyBorder(12, 14, 12, 14));
-        previewBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        previewBox.add(UiKit.themedLabel(
-                "Vista previa en vivo",
-                Font.BOLD,
-                11,
-                Theme::mutedText
-        ), BorderLayout.NORTH);
-        previewBox.add(notificationPreviewArea, BorderLayout.CENTER);
-        controlPanel.add(previewBox);
-
-        return createSettingsCard(
-                AppIcon.Glyph.BELL,
-                "Notificaciones",
-                "Vista previa de cómo se verá un recordatorio antes de programarlo.",
                 controlPanel
         );
     }
@@ -309,23 +230,7 @@ public final class SettingsScreen extends JPanel {
     }
 
     /**
-     * Crea una fila con etiqueta a la izquierda y un control (campo o combo) a la derecha.
-     */
-    private JPanel createFieldRow(String labelText, JComponent field) {
-        JPanel row = new JPanel(new BorderLayout(12, 0));
-        row.setOpaque(false);
-        row.setAlignmentX(Component.LEFT_ALIGNMENT);
-        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-
-        JLabel fieldLabel = UiKit.themedLabel(labelText, Font.BOLD, 12, Theme::text);
-        fieldLabel.setPreferredSize(new Dimension(76, 34));
-        row.add(fieldLabel, BorderLayout.WEST);
-        row.add(field, BorderLayout.CENTER);
-        return row;
-    }
-
-    /**
-     * Crea un área de texto de solo lectura para los párrafos de privacidad y la vista previa.
+     * Crea un área de texto de solo lectura para los párrafos de privacidad.
      * Queda suscripta al tema para actualizar fuente y color.
      */
     private JTextArea createTextBlock(String text, int rows) {
@@ -370,84 +275,6 @@ public final class SettingsScreen extends JPanel {
         textPanel.add(UiKit.themedLabel(role, Font.PLAIN, 11, Theme::mutedText));
         row.add(textPanel, BorderLayout.CENTER);
         return row;
-    }
-
-    /**
-     * Muestra u oculta las filas de teléfono y email según el canal elegido y refresca la
-     * vista previa.
-     */
-    private void updateNotificationTargets() {
-        int selectedChannel = channelComboBox.getSelectedIndex();
-        boolean showPhone = selectedChannel == 0 || selectedChannel == 2;
-        boolean showEmail = selectedChannel == 1 || selectedChannel == 2;
-
-        phoneRow.setVisible(showPhone);
-        emailRow.setVisible(showEmail);
-        revalidate();
-        repaint();
-        updateNotificationPreview();
-    }
-
-    /**
-     * Arma el texto de la vista previa con el canal y el destino elegidos. No envía nada: solo
-     * muestra cómo se vería el recordatorio.
-     */
-    private void updateNotificationPreview() {
-        String phone = phoneField.getText() == null ? "" : phoneField.getText().trim();
-        String email = emailField.getText() == null ? "" : emailField.getText().trim();
-        int selectedChannel = channelComboBox.getSelectedIndex();
-
-        String target;
-        switch (selectedChannel) {
-            case 0 -> target = phone.isEmpty()
-                    ? "WhatsApp · ingresá un número de teléfono"
-                    : "WhatsApp · " + phone;
-            case 1 -> target = email.isEmpty()
-                    ? "Correo electrónico · ingresá una dirección de correo"
-                    : "Correo electrónico · " + email;
-            default -> {
-                String phoneText = phone.isEmpty() ? "ingresá un número de teléfono" : phone;
-                String emailText = email.isEmpty() ? "ingresá una dirección de correo" : email;
-                target = "WhatsApp · " + phoneText + "  |  Correo electrónico · " + emailText;
-            }
-        }
-
-        notificationPreviewArea.setText(
-                "Recordatorio de Trullo · " + target
-                        + "\n\n¡Hola! Este es un recordatorio para trabajar en "
-                        + "\"Terminar el informe\" hoy a las 18:00."
-        );
-    }
-
-    /**
-     * Escucha los cambios de un campo de texto y actualiza la vista previa en vivo.
-     */
-    private void addLivePreviewListener(JTextField field) {
-        field.getDocument().addDocumentListener(new DocumentListener() {
-            /**
-             * Se ejecuta cuando el usuario escribe o pega texto.
-             */
-            @Override
-            public void insertUpdate(DocumentEvent event) {
-                updateNotificationPreview();
-            }
-
-            /**
-             * Se ejecuta cuando el usuario borra texto.
-             */
-            @Override
-            public void removeUpdate(DocumentEvent event) {
-                updateNotificationPreview();
-            }
-
-            /**
-             * Se ejecuta cuando cambia un atributo del documento (por ejemplo, el estilo).
-             */
-            @Override
-            public void changedUpdate(DocumentEvent event) {
-                updateNotificationPreview();
-            }
-        });
     }
 
     /**

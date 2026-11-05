@@ -7,12 +7,14 @@ import com.trullo.interfaces.dao.TaskLabelDAOInterface;
 import com.trullo.interfaces.dao.NoteDAOInterface;
 import com.trullo.interfaces.dao.ProjectDAOInterface;
 import com.trullo.interfaces.dao.ReminderDAOInterface;
+import com.trullo.interfaces.dao.ReminderTargetDAOInterface;
 import com.trullo.dao.TaskDAO;
 import com.trullo.dao.LabelDAO;
 import com.trullo.dao.TaskLabelDAO;
 import com.trullo.dao.NoteDAO;
 import com.trullo.dao.ProjectDAO;
 import com.trullo.dao.ReminderDAO;
+import com.trullo.dao.ReminderTargetDAO;
 
 /**
  * Registra los DAOs de persistencia como singletons.
@@ -36,5 +38,6 @@ public final class DAOModule implements Module {
         c.registerSingleton(NoteDAOInterface.class, NoteDAO::new);
         c.registerSingleton(ProjectDAOInterface.class, ProjectDAO::new);
         c.registerSingleton(ReminderDAOInterface.class, ReminderDAO::new);
+        c.registerSingleton(ReminderTargetDAOInterface.class, ReminderTargetDAO::new);
     }
 }

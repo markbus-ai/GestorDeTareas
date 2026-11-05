@@ -137,6 +137,18 @@ public class TaskController implements CrudValidator, BaseInterface<Task> {
     }
 
     /**
+     * Asigna una tarea a un proyecto o la deja sin proyecto.
+     *
+     * @param id el identificador de la tarea
+     * @param projectId el identificador del proyecto, o {@code null} para quitarla del proyecto
+     * @throws ValidationException si {@code id} es {@code null}
+     */
+    public void asignarProyecto(Long id, Long projectId) {
+        validateId(id);
+        taskService.asignarProyecto(id, projectId);
+    }
+
+    /**
      * Lista las tareas de un proyecto.
      *
      * @param projectId el identificador del proyecto

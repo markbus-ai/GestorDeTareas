@@ -235,7 +235,7 @@ def main():
             prepare_sender(installation, data)
             write_config(config, installation, data, state)
             if not args.setup_only:
-                executable = installation / ("Trullo.exe" if sys.platform == "win32" else "bin/Trullo-java")
+                executable = installation / ("Trullo-java.exe" if sys.platform == "win32" else "bin/Trullo-java")
                 return subprocess.call([str(executable)], cwd=data)
             print("Trullo esta preparado. La configuracion existente se conserva.")
             return 0

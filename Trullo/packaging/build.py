@@ -69,8 +69,15 @@ def main():
     # jmods ausentes en algunos JDK distribuidos como imágenes de runtime.
     run("jlink", "--add-modules", "java.se,jdk.crypto.ec,jdk.unsupported,jdk.charsets,jdk.naming.dns,jdk.zipfs",
         "--strip-debug", "--no-header-files", "--no-man-pages", "--output", runtime)
+    launch_options = []
+    if windows:
+        internal_launcher = work / "java-launcher.properties"
+        internal_launcher.write_text("main-class=com.trullo.TrulloApp\n", encoding="utf-8")
+        launch_options = ["--add-launcher", "Trullo-java=" + str(internal_launcher)]
     run("jpackage", "--type", "app-image", "--name", "Trullo", "--app-version", VERSION,
-        "--input", input_dir, "--main-jar", "Task-1.0-SNAPSHOT.jar", "--main-class", "com.trullo.TrulloApp",
+        "--input", input_dir, "--main-jar", "Task-1.0-SNAPSHOT.jar", "--main-class",
+        "com.trullo.WindowsLauncher" if windows else "com.trullo.TrulloApp",
+        *launch_options,
         "--runtime-image", runtime, "--java-options", "--enable-native-access=ALL-UNNAMED", "--dest", work / "image")
     bundle = work / "image/Trullo"
     probe = work / "probe"

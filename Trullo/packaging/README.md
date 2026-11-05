@@ -48,6 +48,9 @@ python packaging/build.py --postgres-dir C:\pgsql --vc-redist C:\descargas\vc_re
 Resultado: `target/dist/TrulloSetup-1.0.0-windows-x64.exe`.
 Windows 10/11 x64. El setup pide elevación para instalar los componentes de
 Microsoft y copiar la aplicación a Program Files. La preparación de Python y base de datos corre con el usuario original, no con la cuenta elevada.
+`Trullo.exe` y el acceso del menú Inicio ejecutan la preparación y arrancan
+PostgreSQL antes de abrir la interfaz. `Trullo-java.exe` es el launcher Java
+interno; solo lo ejecuta el bootstrap, que espera su cierre para detener la base.
 No se requiere un servicio PostgreSQL instalado ni una contraseña administrativa
 existente. Java tampoco se instala globalmente.
 

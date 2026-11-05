@@ -1,5 +1,6 @@
 package com.trullo.bootstrap;
 
+import com.trullo.core.AppConfig;
 import com.trullo.core.Container;
 import com.trullo.interfaces.dao.LabelDAOInterface;
 import com.trullo.interfaces.dao.ReminderDAOInterface;
@@ -21,7 +22,6 @@ import com.trullo.services.NoteServiceImpl;
 import com.trullo.services.ProyectoServiceImpl;
 import com.trullo.services.ReminderServiceImpl;
 import com.trullo.services.ReminderTargetServiceImpl;
-import io.github.cdimascio.dotenv.Dotenv;
 
 /**
  * Registra los servicios de negocio como singletons.
@@ -75,7 +75,7 @@ public final class ServiceModule implements Module {
         container.registerSingleton(
             NotifierRegistry.class,
             () -> NotifierRegistry.fromServiceLoader(
-                Dotenv.configure().ignoreIfMissing().load()
+                AppConfig.load()
             )
         );
 

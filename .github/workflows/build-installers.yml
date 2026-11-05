@@ -1,0 +1,100 @@
+name: Build Trullo installers
+on:
+  workflow_dispatch:
+    inputs:
+      postgres_url:
+        description: URL HTTPS del ZIP oficial EDB de PostgreSQL Windows x64
+        required: true
+        type: string
+      postgres_sha256:
+        description: SHA256 verificado del ZIP PostgreSQL
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Install PostgreSQL test tools
+        run: sudo apt-get update && sudo apt-get install -y postgresql postgresql-client
+      - name: Test setup and database provisioning
+        working-directory: Trullo
+        env:
+          TRULLO_SETUP_TEST_POSTGRES: '1'
+        run: mvn -B -ntp test
+      - name: Write private API and SMTP configuration
+        working-directory: Trullo
+        env:
+          TRULLO_PRIVATE_ENV: ${{ secrets.TRULLO_PRIVATE_ENV }}
+        run: printf '%s\n' "$TRULLO_PRIVATE_ENV" > "$RUNNER_TEMP/private.env"
+      - name: Build Linux
+        working-directory: Trullo
+        run: python3 packaging/build.py --config-env "$RUNNER_TEMP/private.env"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Trullo-linux-x64
+          path: |
+            Trullo/target/dist/*.tar.gz
+            Trullo/target/dist/SHA256SUMS
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Download and verify PostgreSQL and Microsoft runtime
+        env:
+          PG_URL: ${{ inputs.postgres_url }}
+          PG_SHA256: ${{ inputs.postgres_sha256 }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (!$env:PG_URL.StartsWith('https://get.enterprisedb.com/postgresql/')) { throw 'Usa el ZIP oficial EDB.' }
+          if ($env:PG_SHA256 -notmatch '^[a-fA-F0-9]{64}$') { throw 'SHA256 invalido.' }
+          Invoke-WebRequest $env:PG_URL -OutFile "$env:RUNNER_TEMP\postgres.zip"
+          if ((Get-FileHash "$env:RUNNER_TEMP\postgres.zip" -Algorithm SHA256).Hash -ne $env:PG_SHA256) { throw 'Checksum PostgreSQL incorrecto.' }
+          Expand-Archive "$env:RUNNER_TEMP\postgres.zip" "$env:RUNNER_TEMP\postgres"
+          Invoke-WebRequest 'https://aka.ms/vs/17/release/vc_redist.x64.exe' -OutFile "$env:RUNNER_TEMP\vc_redist.x64.exe"
+          $signature = Get-AuthenticodeSignature "$env:RUNNER_TEMP\vc_redist.x64.exe"
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft Corporation') { throw 'Firma Microsoft invalida.' }
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Test setup helpers
+        working-directory: Trullo
+        shell: pwsh
+        run: mvn -B -ntp test
+      - name: Write private API and SMTP configuration
+        working-directory: Trullo
+        shell: pwsh
+        env:
+          TRULLO_PRIVATE_ENV: ${{ secrets.TRULLO_PRIVATE_ENV }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = Join-Path $env:RUNNER_TEMP 'private.env'
+          [System.IO.File]::WriteAllText($path, $env:TRULLO_PRIVATE_ENV + "`n")
+      - name: Build Windows EXE
+        working-directory: Trullo
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $initdb = Get-ChildItem "$env:RUNNER_TEMP\postgres" -Filter initdb.exe -Recurse | Select-Object -First 1
+          if (!$initdb) { throw 'ZIP PostgreSQL sin initdb.exe' }
+          python packaging/build.py --config-env "$env:RUNNER_TEMP\private.env" --postgres-dir $initdb.Directory.Parent.FullName --vc-redist "$env:RUNNER_TEMP\vc_redist.x64.exe" --iscc "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Trullo-windows-x64
+          path: |
+            Trullo/target/dist/*.exe
+            Trullo/target/dist/SHA256SUMS

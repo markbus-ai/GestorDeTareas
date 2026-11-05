@@ -6,6 +6,8 @@ import com.trullo.interfaces.services.TaskService;
 import com.trullo.model.Reminder;
 import com.trullo.model.ReminderTarget;
 import com.trullo.model.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Arma el mensaje que se envía para un destino de recordatorio.
@@ -14,6 +16,7 @@ import com.trullo.model.Task;
  * recordatorio no tiene tarea o la tarea ya no existe, usa un texto genérico.
  */
 public class ReminderMessageBuilder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReminderMessageBuilder.class);
     private static final String TITLE = "Recordatorio de Trullo";
     private static final String DEFAULT_BODY = "Tenés un recordatorio pendiente";
 
@@ -51,6 +54,8 @@ public class ReminderMessageBuilder {
         try {
             task = taskService.obtenerPorId(reminder.getTaskId());
         } catch (NotFoundException e) {
+            LOGGER.warn("No se encontro la tarea del recordatorio " + reminder.getId()
+                    + "; se usa el mensaje generico", e);
             return DEFAULT_BODY;
         }
         if (task.getDueDate() == null) {

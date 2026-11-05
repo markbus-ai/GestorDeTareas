@@ -1,5 +1,7 @@
 package com.trullo.frontend;
 
+import com.trullo.core.ErrorReporter;
+
 import com.trullo.controller.ProyectoController;
 import com.trullo.controller.TaskController;
 import com.trullo.model.Proyecto;
@@ -105,7 +107,7 @@ public final class ProjectsScreen extends JPanel implements RefreshableScreen {
             tasks.addAll(loadedTasks);
             loadErrorMessage = null;
         } catch (RuntimeException exception) {
-            loadErrorMessage = exception.getMessage();
+            loadErrorMessage = ErrorReporter.report("No se pudieron cargar los proyectos y tareas.", exception);
         }
         refreshList();
     }

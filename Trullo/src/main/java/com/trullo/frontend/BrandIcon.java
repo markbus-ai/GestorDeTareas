@@ -1,5 +1,7 @@
 package com.trullo.frontend;
 
+import com.trullo.core.ErrorReporter;
+
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import java.awt.Graphics2D;
@@ -132,6 +134,7 @@ public final class BrandIcon {
         try (InputStream stream = BrandIcon.class.getResourceAsStream(RESOURCE_PATH)) {
             return stream == null ? null : ImageIO.read(stream);
         } catch (IOException exception) {
+            ErrorReporter.report("No se pudo leer el icono de Trullo", exception);
             return null;
         }
     }
@@ -159,6 +162,7 @@ public final class BrandIcon {
         try (InputStream stream = Files.newInputStream(path)) {
             return ImageIO.read(stream);
         } catch (IOException exception) {
+            ErrorReporter.report("No se pudo leer el icono de Trullo", exception);
             return null;
         }
     }

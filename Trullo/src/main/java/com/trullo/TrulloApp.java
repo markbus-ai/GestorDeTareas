@@ -7,11 +7,14 @@ import com.trullo.controller.ReminderController;
 import com.trullo.controller.ReminderTargetController;
 import com.trullo.controller.TaskController;
 import com.trullo.core.Container;
+import com.trullo.core.ErrorReporter;
 import com.trullo.frontend.MainWindow;
 import com.trullo.frontend.Theme;
 import com.trullo.notification.ReminderNotifications;
 
 import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
+import java.awt.GraphicsEnvironment;
 import java.util.Locale;
 
 /**
@@ -31,6 +34,13 @@ public final class TrulloApp {
      * eventos de la interfaz.
      */
     public static void main(String[] args) {
+        Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
+            String message = ErrorReporter.report("Error no controlado en " + thread.getName(), error);
+            if (!GraphicsEnvironment.isHeadless()) {
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                        null, message, "Error de Trullo", JOptionPane.ERROR_MESSAGE));
+            }
+        });
         // Fija el español como idioma por defecto para fechas y textos de los diálogos.
         Locale.setDefault(Locale.forLanguageTag("es-ES"));
 

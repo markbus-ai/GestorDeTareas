@@ -1,5 +1,7 @@
 package com.trullo.frontend;
 
+import com.trullo.core.ErrorReporter;
+
 import com.trullo.controller.ReminderController;
 import com.trullo.controller.ReminderTargetController;
 import com.trullo.controller.TaskController;
@@ -144,7 +146,8 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
             calendarView.setReminderDates(reminderDates);
             showRemindersForDate(calendarView.getSelectedDate());
         } catch (RuntimeException exception) {
-            remindersPanel.showError("No se pudieron cargar los datos del calendario.");
+            remindersPanel.showError(ErrorReporter.report(
+                    "No se pudieron cargar los datos del calendario.", exception));
             calendarView.setReminderDates(Set.of());
         }
     }
@@ -154,25 +157,25 @@ public final class CalendarScreen extends JPanel implements RefreshableScreen {
      * elegido y se los pasa al panel derecho junto con el mapa de tareas.
      */
     private void showRemindersForDate(LocalDate date) {
-        remindersPanel.showReminders(
-                date,
-                reminders,
-                tasksById,
-                this::targetsOf,
-                this::deleteReminder
-        );
+        try {
+            remindersPanel.showReminders(
+                    date,
+                    reminders,
+                    tasksById,
+                    this::targetsOf,
+                    this::deleteReminder
+            );
+        } catch (RuntimeException exception) {
+            remindersPanel.showError(ErrorReporter.report(
+                    "No se pudieron cargar los destinos de los recordatorios.", exception));
+        }
     }
 
     /**
-     * Busca los destinos de un recordatorio. Si la lectura falla, la tarjeta se muestra igual
-     * con una etiqueta genérica.
+     * Busca los destinos; el error se muestra en el panel de recordatorios.
      */
     private List<ReminderTarget> targetsOf(Reminder reminder) {
-        try {
-            return reminderTargetController.listarDestinos(reminder.getId());
-        } catch (RuntimeException exception) {
-            return List.of();
-        }
+        return reminderTargetController.listarDestinos(reminder.getId());
     }
 
     /**

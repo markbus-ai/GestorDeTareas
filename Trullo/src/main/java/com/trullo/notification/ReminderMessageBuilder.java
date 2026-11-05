@@ -12,13 +12,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Arma el mensaje que se envía para un destino de recordatorio.
  *
- * <p>El cuerpo nombra la tarea del recordatorio y, si tiene, su fecha de vencimiento. Si el
+ * <p>El cuerpo nombra la tarea del recordatorio. Si el
  * recordatorio no tiene tarea o la tarea ya no existe, usa un texto genérico.
  */
 public class ReminderMessageBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReminderMessageBuilder.class);
     private static final String TITLE = "Recordatorio de Trullo";
-    private static final String DEFAULT_BODY = "Tenés un recordatorio pendiente";
+    private static final String DEFAULT_TASK = "una tarea";
 
     private final ReminderService reminderService;
     private final TaskService taskService;
@@ -47,8 +47,13 @@ public class ReminderMessageBuilder {
     }
 
     private String buildBody(Reminder reminder) {
+        return "🔔 *Recordatorio de Trullo*\n\nTenés pendiente: " + taskTitle(reminder)
+                + "\n\nUn pequeño avance también cuenta. ¡Es momento de darle lugar!";
+    }
+
+    private String taskTitle(Reminder reminder) {
         if (reminder.getTaskId() == null) {
-            return DEFAULT_BODY;
+            return DEFAULT_TASK;
         }
         Task task;
         try {
@@ -56,11 +61,8 @@ public class ReminderMessageBuilder {
         } catch (NotFoundException e) {
             LOGGER.warn("No se encontro la tarea del recordatorio " + reminder.getId()
                     + "; se usa el mensaje generico", e);
-            return DEFAULT_BODY;
+            return DEFAULT_TASK;
         }
-        if (task.getDueDate() == null) {
-            return task.getTitle();
-        }
-        return task.getTitle() + " (vence el " + task.getDueDate() + ")";
+        return task.getTitle();
     }
 }

@@ -84,13 +84,13 @@ public class WhatsAppNotifier implements Notifier {
      * {@inheritDoc}
      *
      * <p>El número se normaliza a solo dígitos, que es el formato que espera WhatsPlay, y el
-     * mensaje se arma con el título en la primera línea y el texto debajo.
+     * cuerpo del mensaje incluye el encabezado y el texto del recordatorio.
      */
     @Override
     public void send(String address, Message message) {
         List<String> command = new ArrayList<>(launcher);
         command.addAll(List.of("--session", session.toString(), "--to", digitsOnly(address),
-                "--message", message.title() + "\n" + message.body()));
+                "--message", message.body()));
 
         try {
             Process process = new ProcessBuilder(command).inheritIO().start();
